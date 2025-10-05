@@ -1,0 +1,25 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own document
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // Users can create their own document on signup
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Users can update their own document
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Game history collection
+    match /gameHistory/{gameId} {
+      // Users can only read their own game history
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Users can only create game history for themselves
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Game history is immutable once created
+      allow update, delete: if false;
+    }
+  }
+}
