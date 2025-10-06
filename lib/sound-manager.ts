@@ -1,6 +1,7 @@
 class SoundManager {
   private sounds: Map<string, HTMLAudioElement> = new Map();
   private initialized = false;
+  private currentVolume = 0.5;
 
   init() {
     if (this.initialized) return;
@@ -16,7 +17,7 @@ class SoundManager {
   private loadSound(key: string, path: string) {
     const audio = new Audio(path);
     audio.preload = 'auto';
-    audio.volume = 0.5;
+    audio.volume = this.currentVolume;
     this.sounds.set(key, audio);
   }
 
@@ -34,12 +35,29 @@ class SoundManager {
     }
   }
 
-  setVolume(key: string, volume: number) {
-    const sound = this.sounds.get(key);
-    if (sound) {
-      sound.volume = Math.max(0, Math.min(1, volume));
+  private clampVolume(value: number) {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  setVolume(volume: number): void;
+  setVolume(key: string, volume: number): void;
+  setVolume(arg1: string | number, arg2?: number): void {
+    if (typeof arg1 === 'string') {
+      if (typeof arg2 !== 'number') return;
+      const sound = this.sounds.get(arg1);
+      if (sound) {
+        sound.volume = this.clampVolume(arg2);
+      }
+      return;
     }
+
+    const volume = this.clampVolume(arg1);
+    this.currentVolume = volume;
+    this.sounds.forEach((sound) => {
+      sound.volume = volume;
+    });
   }
 }
 
 export const soundManager = new SoundManager();
+

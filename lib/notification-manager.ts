@@ -15,7 +15,9 @@ class NotificationManager {
   subscribe(listener: NotificationListener) {
     this.listeners.add(listener);
     listener(this.notifications);
-    return () => this.listeners.delete(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   show(type: NotificationType, message: string) {
@@ -47,3 +49,4 @@ class NotificationManager {
 }
 
 export const notificationManager = new NotificationManager();
+
