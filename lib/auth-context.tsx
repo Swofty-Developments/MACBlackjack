@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const newUser: User = {
       uid: userCredential.user.uid,
       email: userCredential.user.email!,
-      chips: 1000, // Starting chips
+      chips: 500, // Starting chips
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -129,10 +129,12 @@ export function GameMenu() {
   return (
     <>
       <TopBar title="MENU" showProfilePill />
-      <main className="flex min-h-screen items-center justify-start bg-background p-4 pt-20 pb-12 overflow-hidden">
+
+      {/* Desktop Layout */}
+      <main className="hidden lg:flex min-h-screen items-center justify-start bg-background p-4 pt-20 pb-12 overflow-hidden">
         <div className="relative flex items-center w-full">
           {/* Menu Buttons */}
-          <div className="flex flex-col gap-8 w-full pl-[280px] md:pl-[320px]">
+          <div className="flex flex-col gap-8 w-full pl-[280px] lg:pl-[320px]">
             <MenuButton
               onClick={() => handleMenuClick('profile')}
               title="Profile"
@@ -154,7 +156,7 @@ export function GameMenu() {
           </div>
 
           {/* Play Button - Overlays on top with padding, glow can protrude */}
-          <div className="absolute -left-8 md:left-0 z-20">
+          <div className="absolute -left-8 lg:left-0 z-20">
             <div
               className="bg-background rounded-full flex items-center justify-center"
               style={{
@@ -162,19 +164,61 @@ export function GameMenu() {
                 height: '488px'
               }}
             >
-              <PlayButton onClick={() => handleMenuClick('game')} />
+              <PlayButton onClick={() => handleMenuClick('game')} size="large" />
             </div>
           </div>
         </div>
         <MusicPlayer musicType="menu" />
       </main>
+
+      {/* Mobile Layout */}
+      <main className="flex lg:hidden min-h-screen flex-col items-center justify-center bg-background pt-24 pb-12 gap-8 overflow-hidden">
+        {/* Play Button - Smaller for mobile, centered */}
+        <div className="flex items-center justify-center">
+          <PlayButton onClick={() => handleMenuClick('game')} size="small" />
+        </div>
+
+        {/* Menu Buttons - Left aligned */}
+        <div className="flex flex-col gap-4 w-full">
+          <MenuButton
+            onClick={() => handleMenuClick('profile')}
+            title="Profile"
+            color="blue"
+            textOffset={60}
+          />
+          <MenuButton
+            onClick={() => handleMenuClick('history')}
+            title="Game History"
+            color="green"
+            textOffset={60}
+          />
+          <MenuButton
+            onClick={handleSignOut}
+            title="Log Out"
+            color="red"
+            textOffset={60}
+          />
+        </div>
+
+        {/* Profile Pill - Mobile version */}
+        <div className="w-full px-4">
+          <ProfilePill />
+        </div>
+
+        <MusicPlayer musicType="menu" />
+      </main>
+
       <BottomBar />
     </>
   );
 }
 
-function PlayButton({ onClick }: { onClick: () => void }) {
+function PlayButton({ onClick, size = 'large' }: { onClick: () => void; size?: 'small' | 'large' }) {
   const [isHovered, setIsHovered] = useState(false);
+
+  const dimensions = size === 'small'
+    ? { outer: 200, lines: 200, lineLength: 100, circle: 180, inner: 160, fontSize: 'text-4xl' }
+    : { outer: 580, lines: 580, lineLength: 290, circle: 480, inner: 432, fontSize: 'text-8xl' };
 
   return (
     <button
@@ -190,8 +234,8 @@ function PlayButton({ onClick }: { onClick: () => void }) {
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         style={{
-          width: '580px',
-          height: '580px',
+          width: `${dimensions.lines}px`,
+          height: `${dimensions.lines}px`,
           animation: isHovered ? 'spin-lines 2s linear infinite' : 'spin-lines 6s linear infinite'
         }}
       >
@@ -200,7 +244,7 @@ function PlayButton({ onClick }: { onClick: () => void }) {
             key={i}
             className="absolute top-1/2 left-1/2 -translate-y-1/2 origin-left"
             style={{
-              width: '290px',
+              width: `${dimensions.lineLength}px`,
               height: '2px',
               background: `linear-gradient(to right,
                 transparent 0%,
@@ -218,8 +262,8 @@ function PlayButton({ onClick }: { onClick: () => void }) {
       <div
         className="relative rounded-full flex items-center justify-center transition-transform duration-300"
         style={{
-          width: '480px',
-          height: '480px',
+          width: `${dimensions.circle}px`,
+          height: `${dimensions.circle}px`,
           background: 'white',
           transform: isHovered ? 'scale(1.05)' : 'scale(1)'
         }}
@@ -236,8 +280,8 @@ function PlayButton({ onClick }: { onClick: () => void }) {
         <div
           className="absolute rounded-full bg-black flex items-center justify-center"
           style={{
-            width: '432px',
-            height: '432px'
+            width: `${dimensions.inner}px`,
+            height: `${dimensions.inner}px`
           }}
         >
           {/* Pulsing background effect */}
@@ -249,7 +293,7 @@ function PlayButton({ onClick }: { onClick: () => void }) {
             }}
           />
 
-          <span className="text-white font-black text-8xl tracking-widest relative z-10">
+          <span className={`text-white font-black ${dimensions.fontSize} tracking-widest relative z-10`}>
             PLAY
           </span>
         </div>

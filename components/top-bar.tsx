@@ -33,7 +33,7 @@ export function TopBar({ title, showProfilePill = false }: TopBarProps) {
               alt="Logo"
               className="h-28 w-auto animate-pulse-logo-glow"
             />
-            <span className="text-neutral-700/30 text-7xl mt-2" style={{ fontWeight: 900 }}>FOR MAC :)</span>
+            <span className="hidden lg:block text-neutral-700/30 text-7xl mt-2" style={{ fontWeight: 900 }}>FOR MAC :)</span>
           </div>
 
           {/* Title - centered in actual viewport, hidden on small screens */}
@@ -43,10 +43,10 @@ export function TopBar({ title, showProfilePill = false }: TopBarProps) {
             </h1>
           )}
 
-          {/* Credits Section - Right side with gold background */}
+          {/* Credits Section - Right side with gold background - Hidden on mobile for menu page */}
           {showProfilePill && (
-            <div className="absolute right-0 top-0 h-full bg-yellow-500 transition-all duration-300 hover:scale-105 z-[9998]" style={{ filter: 'drop-shadow(0 0 15px rgba(234, 179, 8, 0.4))' }}>
-              <div className="h-full flex items-center px-8">
+            <div className="hidden lg:block absolute right-0 top-0 h-full bg-yellow-500 transition-all duration-300 hover:scale-105 z-[9998] overflow-visible" style={{ filter: 'drop-shadow(0 0 15px rgba(234, 179, 8, 0.4))' }}>
+              <div className="h-full flex items-center px-8 overflow-visible">
                 <ProfilePill />
               </div>
             </div>
