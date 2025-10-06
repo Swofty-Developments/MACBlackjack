@@ -13,7 +13,7 @@ import { Card } from '@/components/ui/card';
 import { soundManager } from '@/lib/sound-manager';
 import { ProfilePill } from '@/components/profile-pill';
 
-type MenuState = 'menu' | 'loading' | 'game' | 'history' | 'profile';
+type MenuState = 'menu' | 'loading' | 'ready' | 'game' | 'history' | 'profile';
 
 export function GameMenu() {
   const { signOut } = useAuth();
@@ -28,7 +28,10 @@ export function GameMenu() {
     soundManager.play('click_forward');
     if (state === 'game') {
       setMenuState('loading');
-      setTimeout(() => setMenuState('game'), 1500);
+      setTimeout(() => {
+        setMenuState('ready');
+        setTimeout(() => setMenuState('game'), 1000);
+      }, 1500);
     } else {
       setMenuState(state);
     }
@@ -54,8 +57,24 @@ export function GameMenu() {
             <div className="h-3 w-3 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]"></div>
             <div className="h-3 w-3 animate-bounce rounded-full bg-primary"></div>
           </div>
+          <MusicPlayer musicType="menu" />
         </main>
         <BottomBar />
+      </>
+    );
+  }
+
+  if (menuState === 'ready') {
+    return (
+      <>
+        <TopBar title="READY?" variant="game" />
+        <main className="flex min-h-screen items-center justify-center bg-background pt-20 pb-12 animate-fade-in">
+          <div className="text-8xl text-white font-black animate-pulse" style={{ fontWeight: 900 }}>
+            Ready?
+          </div>
+          <MusicPlayer musicType="game" />
+        </main>
+        <BottomBar variant="game" />
       </>
     );
   }
@@ -63,21 +82,38 @@ export function GameMenu() {
   if (menuState === 'game') {
     return (
       <>
-        <TopBar title="BLACKJACK" showProfilePill />
-        <main className="min-h-screen p-4 bg-background animate-fade-in pt-24 pb-16">
-          <div className="container mx-auto">
-            <Button
-              onClick={handleBack}
-              variant="outline"
-              className="mb-4 hover:bg-accent transition-all"
-            >
-              ← Back to Menu
-            </Button>
+        <TopBar title="BLACKJACK" showProfilePill variant="game" inGame />
+        <main className="fixed inset-0 poker-table-bg animate-fade-in pt-24 pb-16 flex items-center justify-center overflow-hidden">
+          <div className="w-full h-full flex items-center justify-center overflow-y-auto">
             <BlackjackGame />
           </div>
+
+          {/* EXIT Button - Bottom Left */}
+          <button
+            onClick={handleBack}
+            className="fixed bottom-20 left-6 z-[60] flex flex-col items-center gap-3 group transition-all duration-300 hover:scale-110"
+            onMouseEnter={() => soundManager.play('hover')}
+          >
+            {/* Door Icon */}
+            <div className="relative w-24 h-28 bg-gradient-to-b from-red-700 to-red-900 rounded-xl border-4 border-red-800 shadow-2xl transition-all duration-300 group-hover:shadow-red-500/50">
+              {/* Door Frame */}
+              <div className="absolute inset-3 border-2 border-red-950 rounded"></div>
+              {/* Door Handle */}
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-4 bg-yellow-600 rounded-sm"></div>
+              {/* Door Panel Lines */}
+              <div className="absolute top-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
+              <div className="absolute bottom-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
+            </div>
+
+            {/* EXIT Text */}
+            <span className="text-red-500 font-black text-2xl drop-shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-300 group-hover:text-red-400" style={{ fontWeight: 900 }}>
+              EXIT
+            </span>
+          </button>
+
           <MusicPlayer musicType="game" />
         </main>
-        <BottomBar />
+        <BottomBar variant="game" />
       </>
     );
   }

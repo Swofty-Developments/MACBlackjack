@@ -6,9 +6,11 @@ import { ProfilePill } from '@/components/profile-pill';
 interface TopBarProps {
   title: string;
   showProfilePill?: boolean;
+  variant?: 'default' | 'game';
+  inGame?: boolean;
 }
 
-export function TopBar({ title, showProfilePill = false }: TopBarProps) {
+export function TopBar({ title, showProfilePill = false, variant = 'default', inGame = false }: TopBarProps) {
   const [shouldHideTitle, setShouldHideTitle] = useState(false);
 
   useEffect(() => {
@@ -21,10 +23,13 @@ export function TopBar({ title, showProfilePill = false }: TopBarProps) {
     return () => window.removeEventListener('resize', checkOverlap);
   }, []);
 
+  const barColor = variant === 'game' ? 'bg-green-900/40' : 'bg-neutral-700/30';
+  const pixelColor = variant === 'game' ? 'bg-green-900/40' : 'bg-neutral-700/30';
+
   return (
-    <div className="fixed top-0 left-0 right-0 z-50">
+    <div className={`fixed top-0 left-0 right-0 z-50 ${variant === 'game' ? 'animate-fade-in' : ''}`}>
       {/* Main pure gray bar with transparency */}
-      <div className="h-20 bg-neutral-700/30">
+      <div className={`h-20 ${barColor}`}>
         <div className="flex items-center h-full px-6">
           {/* Logo with white glow - always in the same position */}
           <div className="flex flex-col items-start absolute left-4 top-1 z-[9999]">
@@ -45,9 +50,9 @@ export function TopBar({ title, showProfilePill = false }: TopBarProps) {
 
           {/* Credits Section - Right side with gold background - Hidden on mobile for menu page */}
           {showProfilePill && (
-            <div className="hidden lg:block absolute right-0 top-0 h-full bg-yellow-500 transition-all duration-300 hover:scale-105 z-[9998] overflow-visible" style={{ filter: 'drop-shadow(0 0 15px rgba(234, 179, 8, 0.4))' }}>
+            <div className={`hidden lg:block absolute right-0 top-0 h-full ${inGame ? 'bg-gray-600' : 'bg-yellow-500'} transition-all duration-300 ${inGame ? '' : 'hover:scale-105'} z-[9998] overflow-visible`} style={{ filter: inGame ? 'drop-shadow(0 0 15px rgba(107, 114, 128, 0.4))' : 'drop-shadow(0 0 15px rgba(234, 179, 8, 0.4))' }}>
               <div className="h-full flex items-center px-8 overflow-visible">
-                <ProfilePill />
+                <ProfilePill inGame={inGame} />
               </div>
             </div>
           )}
@@ -56,65 +61,65 @@ export function TopBar({ title, showProfilePill = false }: TopBarProps) {
 
       {/* Pixelated bottom edge - multiple layers for depth */}
       <div className="h-1 flex relative z-10">
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[2%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[4%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[2%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[4%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[2%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-black"></div>
         <div className="flex-1 bg-black"></div>
       </div>
       <div className="h-1 flex relative z-10">
         <div className="w-[4%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[2%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[4%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[2%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[4%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-black"></div>
         <div className="flex-1 bg-black"></div>
       </div>
       <div className="h-1 flex relative z-10">
         <div className="w-[6%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[4%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[5%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[3%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[6%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[4%] bg-black"></div>
         <div className="flex-1 bg-black"></div>
       </div>
       <div className="h-1 flex relative z-10">
         <div className="w-[8%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[7%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[6%] bg-transparent"></div>
-        <div className="flex-1 bg-neutral-700/30"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[8%] bg-black"></div>
         <div className="flex-1 bg-black"></div>
       </div>

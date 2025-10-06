@@ -2,16 +2,22 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { ChevronDown, Coins, X } from 'lucide-react';
+import { ChevronDown, Coins, X, Lock } from 'lucide-react';
 import { soundManager } from '@/lib/sound-manager';
+import { notificationManager } from '@/lib/notification-manager';
 
-export function ProfilePill() {
+interface ProfilePillProps {
+  inGame?: boolean;
+}
+
+export function ProfilePill({ inGame = false }: ProfilePillProps) {
   const { user, updateChips } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownWidth, setDropdownWidth] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isWiggling, setIsWiggling] = useState(false);
 
   if (!user) return null;
 
@@ -75,11 +81,18 @@ export function ProfilePill() {
         <button
           ref={buttonRef}
           onClick={() => {
-            soundManager.play('hover');
-            setIsOpen(!isOpen);
+            if (inGame) {
+              soundManager.play('click_forward');
+              notificationManager.show('error', 'You have to leave the table before you can buy credits!');
+              setIsWiggling(true);
+              setTimeout(() => setIsWiggling(false), 500);
+            } else {
+              soundManager.play('hover');
+              setIsOpen(!isOpen);
+            }
           }}
           onMouseEnter={() => soundManager.play('hover')}
-          className="flex items-center gap-3 transition-all duration-300 hover:brightness-110"
+          className={`flex items-center gap-3 transition-all duration-300 ${inGame ? '' : 'hover:brightness-110'} ${isWiggling ? 'animate-wiggle' : ''}`}
         >
           {/* Username */}
           <span className="text-white font-black text-lg tracking-wide">
@@ -97,12 +110,16 @@ export function ProfilePill() {
             </span>
           </div>
 
-          {/* Chevron */}
-          <ChevronDown
-            className={`h-4 w-4 text-white transition-transform duration-300 ${
-              isOpen ? 'rotate-180' : ''
-            }`}
-          />
+          {/* Lock or Chevron */}
+          {inGame ? (
+            <Lock className="h-4 w-4 text-white" />
+          ) : (
+            <ChevronDown
+              className={`h-4 w-4 text-white transition-transform duration-300 ${
+                isOpen ? 'rotate-180' : ''
+              }`}
+            />
+          )}
         </button>
       </div>
 

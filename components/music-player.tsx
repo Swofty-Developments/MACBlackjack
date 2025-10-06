@@ -98,7 +98,12 @@ export function MusicPlayer({ musicType }: MusicPlayerProps) {
   // Handle music type changes
   useEffect(() => {
     const currentType = globalMusicManager.getCurrentType();
+    console.log('MusicPlayer type change:', { currentType, newType: musicType });
     if (currentType && currentType !== musicType) {
+      globalMusicManager.switchType(musicType, 0);
+      setCurrentTrackIndex(0);
+    } else if (!currentType) {
+      // No current type (e.g., after pause), initialize fresh
       globalMusicManager.switchType(musicType, 0);
       setCurrentTrackIndex(0);
     }
@@ -270,10 +275,10 @@ export function MusicPlayer({ musicType }: MusicPlayerProps) {
     <>
       {/* Background blur overlay when open */}
       {isOpen && !isMobile && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[59] animate-fade-in pointer-events-none" />
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[199] animate-fade-in pointer-events-none" />
       )}
 
-      <div className="fixed bottom-0 right-0 z-[60] music-player-container" style={{ overflow: 'visible' }}>
+      <div className="fixed bottom-0 right-0 z-[200] music-player-container" style={{ overflow: 'visible' }}>
         {/* Expanded Circle Quarter - Behind button */}
         {!isMobile && isOpen && (
           <div
@@ -456,7 +461,7 @@ export function MusicPlayer({ musicType }: MusicPlayerProps) {
             }
           }}
           onMouseEnter={() => soundManager.play('hover')}
-          className="absolute bottom-0 right-0 w-[180px] h-[180px] hover:scale-105 transition-all duration-300 z-10 overflow-hidden flex items-center justify-center"
+          className="absolute bottom-0 right-0 w-[180px] h-[180px] hover:scale-105 transition-all duration-300 z-[250] overflow-hidden flex items-center justify-center"
           style={{
             borderRadius: '100% 0 0 0',
             background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
