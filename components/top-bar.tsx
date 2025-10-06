@@ -78,8 +78,8 @@ export function TopBar({ title, showProfilePill = false, variant = 'default', in
         <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[2%] bg-transparent"></div>
         <div className={`flex-1 ${pixelColor}`}></div>
-        <div className="w-[3%] bg-black"></div>
-        <div className="flex-1 bg-black"></div>
+        <div className="w-[3%] bg-transparent"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
       </div>
       <div className="h-1 flex relative z-10">
         <div className="w-[4%] bg-transparent"></div>
@@ -96,8 +96,8 @@ export function TopBar({ title, showProfilePill = false, variant = 'default', in
         <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[4%] bg-transparent"></div>
         <div className={`flex-1 ${pixelColor}`}></div>
-        <div className="w-[3%] bg-black"></div>
-        <div className="flex-1 bg-black"></div>
+        <div className="w-[3%] bg-transparent"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
       </div>
       <div className="h-1 flex relative z-10">
         <div className="w-[6%] bg-transparent"></div>
@@ -110,8 +110,8 @@ export function TopBar({ title, showProfilePill = false, variant = 'default', in
         <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[6%] bg-transparent"></div>
         <div className={`flex-1 ${pixelColor}`}></div>
-        <div className="w-[4%] bg-black"></div>
-        <div className="flex-1 bg-black"></div>
+        <div className="w-[4%] bg-transparent"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
       </div>
       <div className="h-1 flex relative z-10">
         <div className="w-[8%] bg-transparent"></div>
@@ -120,8 +120,8 @@ export function TopBar({ title, showProfilePill = false, variant = 'default', in
         <div className={`flex-1 ${pixelColor}`}></div>
         <div className="w-[6%] bg-transparent"></div>
         <div className={`flex-1 ${pixelColor}`}></div>
-        <div className="w-[8%] bg-black"></div>
-        <div className="flex-1 bg-black"></div>
+        <div className="w-[8%] bg-transparent"></div>
+        <div className={`flex-1 ${pixelColor}`}></div>
       </div>
     </div>
   );

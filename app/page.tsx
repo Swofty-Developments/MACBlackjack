@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { AuthForm } from '@/components/auth-form';
 import { GameMenu } from '@/components/game-menu';
@@ -9,6 +10,17 @@ import { MusicPlayer } from '@/components/music-player';
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMusicOpen, setIsMusicOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (loading) {
     return (
@@ -20,7 +32,8 @@ export default function Home() {
             <p className="text-lg text-muted-foreground">Loading...</p>
           </div>
         </main>
-        <BottomBar />
+        <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
+        <MusicPlayer musicType="menu" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
       </>
     );
   }
@@ -32,8 +45,8 @@ export default function Home() {
         <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background pt-20 pb-12">
           <AuthForm />
         </main>
-        <BottomBar />
-        <MusicPlayer musicType="menu" />
+        <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
+        <MusicPlayer musicType="menu" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
       </>
     );
   }

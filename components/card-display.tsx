@@ -5,9 +5,10 @@ interface CardDisplayProps {
   card: Card;
   hidden?: boolean;
   animationDelay?: number;
+  scale?: number;
 }
 
-export function CardDisplay({ card, hidden = false, animationDelay = 0 }: CardDisplayProps) {
+export function CardDisplay({ card, hidden = false, animationDelay = 0, scale = 1 }: CardDisplayProps) {
   const getSuitIcon = (suit: Card['suit'], size: 'small' | 'large' = 'small') => {
     const iconClass = size === 'small' ? 'h-8 w-8' : 'h-16 w-16';
     switch (suit) {
@@ -36,19 +37,19 @@ export function CardDisplay({ card, hidden = false, animationDelay = 0 }: CardDi
   if (hidden) {
     return (
       <div
-        className="relative w-32 h-44 rounded-xl border-4 border-blue-700 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card opacity-0"
-        style={{ animationDelay: `${animationDelay}s` }}
+        className="relative w-20 h-28 lg:w-32 lg:h-44 rounded-lg lg:rounded-xl border-2 lg:border-4 border-blue-700 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card opacity-0"
+        style={{ animationDelay: `${animationDelay}s`, transform: `scale(${scale})` }}
       >
-        <div className="absolute inset-2 border-2 border-blue-400 rounded-lg opacity-30"></div>
+        <div className="absolute inset-1 lg:inset-2 border-1 lg:border-2 border-blue-400 rounded-lg opacity-30"></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-white text-6xl font-black opacity-50">?</div>
+          <div className="text-white text-3xl lg:text-6xl font-black opacity-50">?</div>
         </div>
         {/* Decorative pattern */}
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-4 left-4 w-4 h-4 border-2 border-white rounded-full"></div>
-          <div className="absolute top-4 right-4 w-4 h-4 border-2 border-white rounded-full"></div>
-          <div className="absolute bottom-4 left-4 w-4 h-4 border-2 border-white rounded-full"></div>
-          <div className="absolute bottom-4 right-4 w-4 h-4 border-2 border-white rounded-full"></div>
+          <div className="absolute top-2 lg:top-4 left-2 lg:left-4 w-2 lg:w-4 h-2 lg:h-4 border-1 lg:border-2 border-white rounded-full"></div>
+          <div className="absolute top-2 lg:top-4 right-2 lg:right-4 w-2 lg:w-4 h-2 lg:h-4 border-1 lg:border-2 border-white rounded-full"></div>
+          <div className="absolute bottom-2 lg:bottom-4 left-2 lg:left-4 w-2 lg:w-4 h-2 lg:h-4 border-1 lg:border-2 border-white rounded-full"></div>
+          <div className="absolute bottom-2 lg:bottom-4 right-2 lg:right-4 w-2 lg:w-4 h-2 lg:h-4 border-1 lg:border-2 border-white rounded-full"></div>
         </div>
       </div>
     );
@@ -56,36 +57,41 @@ export function CardDisplay({ card, hidden = false, animationDelay = 0 }: CardDi
 
   return (
     <div
-      className="relative w-32 h-44 rounded-xl border-4 border-gray-800 bg-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card opacity-0"
-      style={{ animationDelay: `${animationDelay}s` }}
+      className="relative w-20 h-28 lg:w-32 lg:h-44 rounded-lg lg:rounded-xl border-2 lg:border-4 border-gray-800 bg-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card opacity-0"
+      style={{ animationDelay: `${animationDelay}s`, transform: `scale(${scale})` }}
     >
       {/* Top-left corner */}
-      <div className="absolute top-2 left-2 flex flex-col items-center gap-1">
-        <span className={`text-3xl font-black leading-none ${isRed ? 'text-red-600' : 'text-black'}`} style={{ fontWeight: 900 }}>
+      <div className="absolute top-1 left-1 lg:top-2 lg:left-2 flex flex-col items-center gap-0 lg:gap-1">
+        <span className={`text-xl lg:text-3xl font-black leading-none ${isRed ? 'text-red-600' : 'text-black'}`} style={{ fontWeight: 900 }}>
           {card.value}
         </span>
-        <span className={`text-2xl leading-none ${isRed ? 'text-red-600' : 'text-black'}`}>
+        <span className={`text-lg lg:text-2xl leading-none ${isRed ? 'text-red-600' : 'text-black'}`}>
           {getSuitSymbol(card.suit)}
         </span>
       </div>
 
       {/* Bottom-right corner (rotated) */}
-      <div className="absolute bottom-2 right-2 flex flex-col items-center gap-1 rotate-180">
-        <span className={`text-3xl font-black leading-none ${isRed ? 'text-red-600' : 'text-black'}`} style={{ fontWeight: 900 }}>
+      <div className="absolute bottom-1 right-1 lg:bottom-2 lg:right-2 flex flex-col items-center gap-0 lg:gap-1 rotate-180">
+        <span className={`text-xl lg:text-3xl font-black leading-none ${isRed ? 'text-red-600' : 'text-black'}`} style={{ fontWeight: 900 }}>
           {card.value}
         </span>
-        <span className={`text-2xl leading-none ${isRed ? 'text-red-600' : 'text-black'}`}>
+        <span className={`text-lg lg:text-2xl leading-none ${isRed ? 'text-red-600' : 'text-black'}`}>
           {getSuitSymbol(card.suit)}
         </span>
       </div>
 
       {/* Center suit icon */}
       <div className="absolute inset-0 flex items-center justify-center">
-        {getSuitIcon(card.suit, 'large')}
+        <div className="lg:hidden">
+          {getSuitIcon(card.suit, 'small')}
+        </div>
+        <div className="hidden lg:block">
+          {getSuitIcon(card.suit, 'large')}
+        </div>
       </div>
 
       {/* Subtle gradient overlay for depth */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-gray-200/30 rounded-xl pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-gray-200/30 rounded-lg lg:rounded-xl pointer-events-none"></div>
     </div>
   );
 }

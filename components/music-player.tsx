@@ -8,6 +8,8 @@ import { notificationManager } from '@/lib/notification-manager';
 
 interface MusicPlayerProps {
   musicType: 'menu' | 'game';
+  onOpenChange?: (isOpen: boolean) => void;
+  externalOpen?: boolean;
 }
 
 // Fade volume helper function
@@ -31,8 +33,20 @@ const fadeVolume = (audio: HTMLAudioElement, startVol: number, endVol: number, d
   });
 };
 
-export function MusicPlayer({ musicType }: MusicPlayerProps) {
+export function MusicPlayer({ musicType, onOpenChange, externalOpen }: MusicPlayerProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Sync with external open state
+  useEffect(() => {
+    if (externalOpen !== undefined) {
+      setIsOpen(externalOpen);
+    }
+  }, [externalOpen]);
+
+  // Notify parent of open state changes
+  useEffect(() => {
+    onOpenChange?.(isOpen);
+  }, [isOpen, onOpenChange]);
   const [volume, setVolume] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('musicVolume');
@@ -443,41 +457,39 @@ export function MusicPlayer({ musicType }: MusicPlayerProps) {
           </div>
         )}
 
-        {/* Main Button - Quarter circle with gradient */}
-        <button
-          onClick={() => {
-            if (isOpen) {
-              if (!isMobile) {
+        {/* Main Button - Quarter circle with gradient - Hidden on mobile */}
+        {!isMobile && (
+          <button
+            onClick={() => {
+              if (isOpen) {
                 setIsClosing(true);
                 setTimeout(() => {
                   setIsOpen(false);
                   setIsClosing(false);
                 }, 400);
               } else {
-                setIsOpen(false);
+                setIsOpen(true);
               }
-            } else {
-              setIsOpen(true);
-            }
-          }}
-          onMouseEnter={() => soundManager.play('hover')}
-          className="absolute bottom-0 right-0 w-[180px] h-[180px] hover:scale-105 transition-all duration-300 z-[250] overflow-hidden flex items-center justify-center"
-          style={{
-            borderRadius: '100% 0 0 0',
-            background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
-            boxShadow: '0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(99, 102, 241, 0.4)'
-          }}
-        >
-          <div style={{ position: 'absolute', top: '60%', left: '60%', transform: 'translate(-50%, -50%)' }}>
-            <Music className="h-12 w-12 text-white" />
-          </div>
-        </button>
+            }}
+            onMouseEnter={() => soundManager.play('hover')}
+            className="absolute bottom-0 right-0 w-[180px] h-[180px] hover:scale-105 transition-all duration-300 z-[250] overflow-hidden flex items-center justify-center"
+            style={{
+              borderRadius: '100% 0 0 0',
+              background: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+              boxShadow: '0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(99, 102, 241, 0.4)'
+            }}
+          >
+            <div style={{ position: 'absolute', top: '60%', left: '60%', transform: 'translate(-50%, -50%)' }}>
+              <Music className="h-12 w-12 text-white" />
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Mobile Modal - Outside container with higher z-index */}
       {isMobile && isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm pointer-events-auto">
-          <div className="bg-neutral-800/95 backdrop-blur-md rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto relative z-[10000] pointer-events-auto">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm pointer-events-auto">
+          <div className="bg-neutral-800/95 backdrop-blur-md rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto relative z-[100000] pointer-events-auto">
             <h2 className="text-2xl text-white mb-6 text-center" style={{ fontWeight: 900 }}>
               SELECT TRACK
             </h2>

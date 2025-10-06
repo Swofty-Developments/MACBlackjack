@@ -2,9 +2,11 @@
 
 interface BottomBarProps {
   variant?: 'default' | 'game';
+  onMusicClick?: () => void;
+  showShortHeight?: boolean;
 }
 
-export function BottomBar({ variant = 'default' }: BottomBarProps) {
+export function BottomBar({ variant = 'default', onMusicClick, showShortHeight = false }: BottomBarProps) {
   const barColor = variant === 'game' ? 'bg-green-900/40' : 'bg-neutral-700/30';
   const pixelColor = variant === 'game' ? 'bg-green-900/40' : 'bg-neutral-700/30';
 
@@ -77,11 +79,22 @@ export function BottomBar({ variant = 'default' }: BottomBarProps) {
 
       {/* Main pure gray bar with transparency */}
       <div className={`h-12 ${barColor}`}>
-        <div className="flex items-center justify-start h-full px-6">
+        <div className="flex items-center justify-between h-full px-6">
           <div className="text-left">
             <p className="text-xs text-gray-400 leading-tight" style={{ fontWeight: 900 }}>Made with love</p>
             <p className="text-sm text-white leading-tight" style={{ fontWeight: 900 }}>SWOFTY</p>
           </div>
+
+          {/* Music button for short height screens */}
+          {showShortHeight && onMusicClick && (
+            <button
+              onClick={onMusicClick}
+              className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg transition-all duration-300 text-sm"
+              style={{ fontWeight: 900 }}
+            >
+              OPEN MUSIC PICKER
+            </button>
+          )}
         </div>
       </div>
     </div>

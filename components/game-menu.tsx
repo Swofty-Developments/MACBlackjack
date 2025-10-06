@@ -18,10 +18,27 @@ type MenuState = 'menu' | 'loading' | 'ready' | 'game' | 'history' | 'profile';
 export function GameMenu() {
   const { signOut } = useAuth();
   const [menuState, setMenuState] = useState<MenuState>('menu');
+  const [isMobile, setIsMobile] = useState(false);
+  const [isShortHeight, setIsShortHeight] = useState(false);
+  const [isVeryShortHeight, setIsVeryShortHeight] = useState(false);
+  const [isExtremelyShortHeight, setIsExtremelyShortHeight] = useState(false);
+  const [isMusicOpen, setIsMusicOpen] = useState(false);
 
   useEffect(() => {
     // Initialize sound manager
     soundManager.init();
+  }, []);
+
+  useEffect(() => {
+    const checkSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+      setIsShortHeight(window.innerHeight < 750);
+      setIsVeryShortHeight(window.innerHeight < 850);
+      setIsExtremelyShortHeight(window.innerHeight < 700);
+    };
+    checkSize();
+    window.addEventListener('resize', checkSize);
+    return () => window.removeEventListener('resize', checkSize);
   }, []);
 
   const handleMenuClick = (state: MenuState) => {
@@ -57,9 +74,9 @@ export function GameMenu() {
             <div className="h-3 w-3 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]"></div>
             <div className="h-3 w-3 animate-bounce rounded-full bg-primary"></div>
           </div>
-          <MusicPlayer musicType="menu" />
+          <MusicPlayer musicType="menu" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
         </main>
-        <BottomBar />
+        <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
       </>
     );
   }
@@ -72,9 +89,9 @@ export function GameMenu() {
           <div className="text-8xl text-white font-black animate-pulse" style={{ fontWeight: 900 }}>
             Ready?
           </div>
-          <MusicPlayer musicType="game" />
+          <MusicPlayer musicType="game" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
         </main>
-        <BottomBar variant="game" />
+        <BottomBar variant="game" showShortHeight={isShortHeight} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
       </>
     );
   }
@@ -83,37 +100,18 @@ export function GameMenu() {
     return (
       <>
         <TopBar title="BLACKJACK" showProfilePill variant="game" inGame />
-        <main className="fixed inset-0 poker-table-bg animate-fade-in-slow pt-24 pb-16 flex items-center justify-center overflow-hidden">
+        <main className="fixed inset-0 poker-table-bg lg:poker-table-bg bg-black animate-fade-in-slow pt-24 pb-16 flex items-center justify-center overflow-hidden">
           <div className="w-full h-full flex items-center justify-center overflow-y-auto">
-            <BlackjackGame />
+            <BlackjackGame isShortHeight={isShortHeight} onExit={handleBack} />
           </div>
 
-          {/* EXIT Button - Bottom Left */}
-          <button
-            onClick={handleBack}
-            className="fixed bottom-20 left-6 z-[60] flex flex-col items-center gap-3 group transition-all duration-300 hover:scale-110"
-            onMouseEnter={() => soundManager.play('hover')}
-          >
-            {/* Door Icon */}
-            <div className="relative w-24 h-28 bg-gradient-to-b from-red-700 to-red-900 rounded-xl border-4 border-red-800 shadow-2xl transition-all duration-300 group-hover:shadow-red-500/50">
-              {/* Door Frame */}
-              <div className="absolute inset-3 border-2 border-red-950 rounded"></div>
-              {/* Door Handle */}
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-4 bg-yellow-600 rounded-sm"></div>
-              {/* Door Panel Lines */}
-              <div className="absolute top-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
-              <div className="absolute bottom-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
-            </div>
-
-            {/* EXIT Text */}
-            <span className="text-red-500 font-black text-2xl drop-shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-300 group-hover:text-red-400" style={{ fontWeight: 900 }}>
-              EXIT
-            </span>
-          </button>
-
-          <MusicPlayer musicType="game" />
+          <MusicPlayer musicType="game" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
         </main>
-        <BottomBar variant="game" />
+        <BottomBar
+          variant="game"
+          showShortHeight={isMobile}
+          onMusicClick={() => setIsMusicOpen(!isMusicOpen)}
+        />
       </>
     );
   }
@@ -133,9 +131,9 @@ export function GameMenu() {
             </Button>
             <GameHistory />
           </div>
-          <MusicPlayer musicType="menu" />
+          <MusicPlayer musicType="menu" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
         </main>
-        <BottomBar />
+        <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
       </>
     );
   }
@@ -155,9 +153,9 @@ export function GameMenu() {
             </Button>
             <UserProfile />
           </div>
-          <MusicPlayer musicType="menu" />
+          <MusicPlayer musicType="menu" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
         </main>
-        <BottomBar />
+        <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
       </>
     );
   }
@@ -211,7 +209,7 @@ export function GameMenu() {
       <main className="flex lg:hidden min-h-screen flex-col items-center justify-center bg-background pt-24 pb-12 gap-8 overflow-hidden">
         {/* Play Button - Smaller for mobile, centered */}
         <div className="flex items-center justify-center">
-          <PlayButton onClick={() => handleMenuClick('game')} size="small" />
+          <PlayButton onClick={() => handleMenuClick('game')} size={isExtremelyShortHeight ? 'tiny' : 'small'} />
         </div>
 
         {/* Menu Buttons - Left aligned */}
@@ -221,18 +219,21 @@ export function GameMenu() {
             title="Profile"
             color="blue"
             textOffset={60}
+            heightLevel={isExtremelyShortHeight ? 'tiny' : isVeryShortHeight ? 'short' : 'normal'}
           />
           <MenuButton
             onClick={() => handleMenuClick('history')}
             title="Game History"
             color="green"
             textOffset={60}
+            heightLevel={isExtremelyShortHeight ? 'tiny' : isVeryShortHeight ? 'short' : 'normal'}
           />
           <MenuButton
             onClick={handleSignOut}
             title="Log Out"
             color="red"
             textOffset={60}
+            heightLevel={isExtremelyShortHeight ? 'tiny' : isVeryShortHeight ? 'short' : 'normal'}
           />
         </div>
 
@@ -241,18 +242,20 @@ export function GameMenu() {
           <ProfilePill />
         </div>
 
-        <MusicPlayer musicType="menu" />
+        <MusicPlayer musicType="menu" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
       </main>
 
-      <BottomBar />
+      <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
     </>
   );
 }
 
-function PlayButton({ onClick, size = 'large' }: { onClick: () => void; size?: 'small' | 'large' }) {
+function PlayButton({ onClick, size = 'large' }: { onClick: () => void; size?: 'small' | 'large' | 'tiny' }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const dimensions = size === 'small'
+  const dimensions = size === 'tiny'
+    ? { outer: 160, lines: 160, lineLength: 80, circle: 140, inner: 120, fontSize: 'text-3xl' }
+    : size === 'small'
     ? { outer: 200, lines: 200, lineLength: 100, circle: 180, inner: 160, fontSize: 'text-4xl' }
     : { outer: 580, lines: 580, lineLength: 290, circle: 480, inner: 432, fontSize: 'text-8xl' };
 
@@ -354,6 +357,7 @@ interface MenuButtonProps {
   title: string;
   color: 'blue' | 'green' | 'red';
   textOffset: number;
+  heightLevel?: 'normal' | 'short' | 'tiny';
 }
 
 // Pre-generate serration patterns outside component to avoid recalculation
@@ -416,7 +420,7 @@ const generateSerratedPattern = (colorRgb: string, seed: number) => {
   return pixelRows;
 };
 
-function MenuButton({ onClick, title, color, textOffset }: MenuButtonProps) {
+function MenuButton({ onClick, title, color, textOffset, heightLevel = 'normal' }: MenuButtonProps) {
   const colors = {
     blue: { rgb: '59, 130, 246' },
     green: { rgb: '34, 197, 94' },
@@ -431,6 +435,28 @@ function MenuButton({ onClick, title, color, textOffset }: MenuButtonProps) {
 
   const [isHovered, setIsHovered] = useState(false);
 
+  // Adjust height and text size/position based on height level
+  let buttonHeight: string;
+  let textSize: string;
+  let adjustedTextOffset: number;
+
+  switch (heightLevel) {
+    case 'tiny':
+      buttonHeight = '60px';
+      textSize = 'text-2xl';
+      adjustedTextOffset = Math.max(15, textOffset - 45);
+      break;
+    case 'short':
+      buttonHeight = '80px';
+      textSize = 'text-3xl';
+      adjustedTextOffset = Math.max(20, textOffset - 40);
+      break;
+    default:
+      buttonHeight = '120px';
+      textSize = 'text-5xl';
+      adjustedTextOffset = textOffset;
+  }
+
   return (
     <button
       onClick={onClick}
@@ -441,7 +467,7 @@ function MenuButton({ onClick, title, color, textOffset }: MenuButtonProps) {
       onMouseLeave={() => setIsHovered(false)}
       className="cursor-pointer transition-all duration-300 hover:translate-x-2 hover:brightness-110 w-full relative"
       style={{
-        height: '120px',
+        height: buttonHeight,
         filter: `drop-shadow(0 0 20px rgba(${colorScheme.rgb}, 0.6)) drop-shadow(0 0 40px rgba(${colorScheme.rgb}, 0.4))`
       }}
     >
@@ -449,11 +475,11 @@ function MenuButton({ onClick, title, color, textOffset }: MenuButtonProps) {
       <div
         className="absolute top-0 bottom-0 flex items-center justify-start z-10 pointer-events-none"
         style={{
-          left: `${textOffset}px`,
+          left: `${adjustedTextOffset}px`,
         }}
       >
         <span
-          className="text-white text-5xl font-black whitespace-nowrap tracking-wide transition-all duration-300"
+          className={`text-white ${textSize} font-black whitespace-nowrap tracking-wide transition-all duration-300`}
           style={{
             textShadow: isHovered
               ? `0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.45), 0 0 40px rgba(255, 255, 255, 0.4), 0 0 50px rgba(${colorScheme.rgb}, 0.5), 0 0 60px rgba(${colorScheme.rgb}, 0.45), 0 0 80px rgba(${colorScheme.rgb}, 0.4)`

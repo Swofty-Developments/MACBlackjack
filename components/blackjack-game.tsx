@@ -20,7 +20,12 @@ import {
 } from '@/lib/blackjack';
 import { saveGameHistory } from '@/lib/game-history';
 
-export function BlackjackGame() {
+interface BlackjackGameProps {
+  isShortHeight?: boolean;
+  onExit?: () => void;
+}
+
+export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGameProps = {}) {
   const { user, updateChips } = useAuth();
   const [gameState, setGameState] = useState<GameState>({
     deck: createDeck(),
@@ -221,6 +226,31 @@ export function BlackjackGame() {
 
   if (!user) return null;
 
+  // Calculate card scale based on hand size to prevent overflow on mobile
+  // Mobile card width is 80px (w-20), gap is 8px (gap-2)
+  // Screen width on mobile is ~375px, with padding we have ~340px usable
+  const getCardScale = (handSize: number, isMobile: boolean = false) => {
+    if (!isMobile || handSize <= 2) return 1;
+
+    // Calculate based on available space: ~340px usable width
+    // Each card base width: 80px, gap: 8px
+    const availableWidth = 340;
+    const cardWidth = 80;
+    const gap = 8;
+    const totalNeeded = (handSize * cardWidth) + ((handSize - 1) * gap);
+
+    if (totalNeeded > availableWidth) {
+      return Math.max(0.5, availableWidth / totalNeeded);
+    }
+    return 1;
+  };
+
+  // Detect mobile (similar to the height detection we already have)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+
+  const dealerScale = getCardScale(gameState.dealerHand.length, isMobile);
+  const playerScale = getCardScale(gameState.playerHand.length, isMobile);
+
   // Calculate curve radius based on text length (more digits = less curve)
   const betText = `BET: ${gameState.bet}`;
   const chipsText = `CHIPS: ${user.chips}`;
@@ -241,9 +271,9 @@ export function BlackjackGame() {
   const chipsRotation = 8 + Math.max(0, (chipsDigits - 6) * 0.6);
 
   return (
-    <div className="w-full max-w-7xl h-[800px] mx-auto p-8 relative">
-      {/* BET Display - Top Left Curved Along Table Edge */}
-      <div className="absolute top-32 left-20" style={{ pointerEvents: 'none', transform: `rotate(${betRotation}deg)`, transformOrigin: 'left center' }}>
+    <div className="w-full max-w-7xl h-[800px] mx-auto p-8 pb-8 relative">
+      {/* BET Display - Desktop: Curved, Mobile: Straight */}
+      <div className="hidden lg:block absolute top-32 left-20" style={{ pointerEvents: 'none', transform: `rotate(${betRotation}deg)`, transformOrigin: 'left center' }}>
         <svg width={betWidth} height="60" viewBox={`0 0 ${betWidth} 60`} style={{ overflow: 'visible' }}>
           <defs>
             <path id="betCurve" d={`M 10 50 A ${betRadius} ${betRadius} 0 0 1 ${betWidth - 80} 10`} fill="none"/>
@@ -255,9 +285,12 @@ export function BlackjackGame() {
           </text>
         </svg>
       </div>
+      <div className="lg:hidden absolute top-4 left-4 text-yellow-400 font-black text-xl drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]" style={{ fontWeight: 900, pointerEvents: 'none' }}>
+        {betText}
+      </div>
 
-      {/* CHIPS Display - Top Right Curved Along Table Edge */}
-      <div className="absolute top-32 right-20" style={{ pointerEvents: 'none', transform: `rotate(${chipsRotation}deg)`, transformOrigin: 'right center' }}>
+      {/* CHIPS Display - Desktop: Curved, Mobile: Straight */}
+      <div className="hidden lg:block absolute top-32 right-20" style={{ pointerEvents: 'none', transform: `rotate(${chipsRotation}deg)`, transformOrigin: 'right center' }}>
         <svg width={chipsWidth} height="60" viewBox={`0 0 ${chipsWidth} 60`} style={{ overflow: 'visible' }}>
           <defs>
             <path id="chipsCurve" d={`M 80 10 A ${chipsRadius} ${chipsRadius} 0 0 1 ${chipsWidth - 20} 50`} fill="none"/>
@@ -269,46 +302,53 @@ export function BlackjackGame() {
           </text>
         </svg>
       </div>
-
-      {/* Game Status Message - Centered in Table */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-32">
-        <p className="text-3xl text-white font-black animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" style={{ fontWeight: 900 }}>
-          {message}
-        </p>
+      <div className="lg:hidden absolute top-4 right-4 text-green-400 font-black text-xl drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]" style={{ fontWeight: 900, pointerEvents: 'none' }}>
+        {chipsText}
       </div>
 
-      {/* Dealer's hand */}
-      <div className="mb-12">
-        <h3 className="text-2xl font-black text-white mb-4 text-center drop-shadow-lg" style={{ fontWeight: 900 }}>
+      {/* Game Status Message - Centered in Table - Hide during betting on mobile to avoid overlap */}
+      {(gameState.gameStatus !== 'betting' || !isShortHeight) && (
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:-mt-32 ${typeof window !== 'undefined' && window.innerHeight < 700 ? '-mt-24' : '-mt-16'}`}>
+          <p className="text-2xl lg:text-3xl text-white font-black animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" style={{ fontWeight: 900 }}>
+            {message}
+          </p>
+        </div>
+      )}
+
+      {/* Dealer's hand - stays at top */}
+      <div className="lg:mb-12">
+        <h3 className="text-lg lg:text-2xl font-black text-white mb-2 lg:mb-4 text-center drop-shadow-lg" style={{ fontWeight: 900 }}>
           DEALER
           {gameState.gameStatus !== 'betting' &&
             gameState.gameStatus !== 'playing' &&
             ` - ${calculateHandValue(gameState.dealerHand)}`}
         </h3>
-        <div className="flex gap-4 flex-wrap justify-center min-h-[180px] items-center">
+        <div className="flex gap-2 lg:gap-4 justify-center min-h-[100px] lg:min-h-[180px] items-center">
           {gameState.dealerHand.map((card, index) => (
             <CardDisplay
               key={index}
               card={card}
               hidden={gameState.gameStatus === 'playing' && index === 1}
               animationDelay={index * 0.1}
+              scale={dealerScale}
             />
           ))}
         </div>
       </div>
 
-      {/* Player's hand */}
+      {/* Player's hand - positioned at bottom on mobile */}
       {gameState.playerHand.length > 0 && (
-        <div className="mb-12">
-          <h3 className="text-2xl font-black text-white mb-4 text-center drop-shadow-lg" style={{ fontWeight: 900 }}>
+        <div className={`absolute lg:static left-0 right-0 lg:mb-12 px-4 lg:px-0 ${typeof window !== 'undefined' && window.innerHeight < 700 ? 'top-[42%]' : 'bottom-[200px]'}`}>
+          <h3 className="text-lg lg:text-2xl font-black text-white mb-2 lg:mb-4 text-center drop-shadow-lg" style={{ fontWeight: 900 }}>
             YOUR HAND - {getHandValueDisplay(gameState.playerHand)}
           </h3>
-          <div className="flex gap-4 flex-wrap justify-center min-h-[180px] items-center">
+          <div className="flex gap-2 lg:gap-4 justify-center min-h-[100px] lg:min-h-[180px] items-center">
             {gameState.playerHand.map((card, index) => (
               <CardDisplay
                 key={index}
                 card={card}
                 animationDelay={(gameState.dealerHand.length + index) * 0.1}
+                scale={playerScale}
               />
             ))}
           </div>
@@ -316,76 +356,143 @@ export function BlackjackGame() {
       )}
 
       {/* Controls */}
-      <div className="space-y-6 max-w-2xl mx-auto">
+      <div className={`space-y-2 lg:space-y-6 max-w-2xl mx-auto px-4 lg:px-0 absolute left-0 right-0 lg:static ${typeof window !== 'undefined' && window.innerHeight < 700 ? 'top-[30%]' : 'top-[50%]'}`}>
         {gameState.gameStatus === 'betting' && betAmounts.length > 0 && (
-          <div className="flex flex-col gap-6 animate-fade-in absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-8 w-full max-w-2xl">
-            {/* Bet Amount Display */}
-            <div className="text-center">
-              <p className="text-yellow-400 font-black text-xl mb-2" style={{ fontWeight: 900 }}>BET AMOUNT</p>
-              <p className="text-white font-black text-5xl" style={{ fontWeight: 900 }}>{betInput || '0'}</p>
-            </div>
+          <>
+            {/* Deal Button with EXIT inline on mobile */}
+            <div className="lg:static lg:left-0 lg:right-0 flex flex-col gap-4 lg:gap-6 animate-fade-in">
+              {/* Bet Amount Display */}
+              <div className="text-center lg:hidden">
+                <p className="text-yellow-400 font-black text-base mb-1" style={{ fontWeight: 900 }}>BET AMOUNT</p>
+                <p className="text-white font-black text-3xl" style={{ fontWeight: 900 }}>{betInput || '0'}</p>
+              </div>
 
-            {/* Slider */}
-            <div className="relative px-4">
-              <input
-                type="range"
-                min="0"
-                max={betAmounts.length - 1}
-                value={sliderValue}
-                onChange={(e) => handleSliderChange(parseInt(e.target.value))}
-                className="w-full h-4 bg-neutral-800 rounded-lg appearance-none cursor-pointer
-                  [&::-webkit-slider-thumb]:appearance-none
-                  [&::-webkit-slider-thumb]:w-8
-                  [&::-webkit-slider-thumb]:h-8
-                  [&::-webkit-slider-thumb]:rounded-full
-                  [&::-webkit-slider-thumb]:bg-gradient-to-r
-                  [&::-webkit-slider-thumb]:from-yellow-500
-                  [&::-webkit-slider-thumb]:to-yellow-600
-                  [&::-webkit-slider-thumb]:border-4
-                  [&::-webkit-slider-thumb]:border-yellow-700
-                  [&::-webkit-slider-thumb]:shadow-2xl
-                  [&::-webkit-slider-thumb]:cursor-pointer
-                  [&::-webkit-slider-thumb]:hover:scale-110
-                  [&::-webkit-slider-thumb]:transition-transform"
-              />
+              {/* Slider */}
+              <div className="relative px-2 lg:hidden">
+                <input
+                  type="range"
+                  min="0"
+                  max={betAmounts.length - 1}
+                  value={sliderValue}
+                  onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                  className="w-full h-3 bg-neutral-800 rounded-lg appearance-none cursor-pointer
+                    [&::-webkit-slider-thumb]:appearance-none
+                    [&::-webkit-slider-thumb]:w-6
+                    [&::-webkit-slider-thumb]:h-6
+                    [&::-webkit-slider-thumb]:rounded-full
+                    [&::-webkit-slider-thumb]:bg-gradient-to-r
+                    [&::-webkit-slider-thumb]:from-yellow-500
+                    [&::-webkit-slider-thumb]:to-yellow-600
+                    [&::-webkit-slider-thumb]:border-2
+                    [&::-webkit-slider-thumb]:border-yellow-700
+                    [&::-webkit-slider-thumb]:shadow-2xl
+                    [&::-webkit-slider-thumb]:cursor-pointer
+                    [&::-webkit-slider-thumb]:hover:scale-110
+                    [&::-webkit-slider-thumb]:transition-transform"
+                />
 
-              {/* Slider value markers */}
-              <div className="flex justify-between mt-2 px-1">
-                {betAmounts.map((amount, index) => (
-                  <span
-                    key={index}
-                    className={`text-xs font-black transition-colors ${index === sliderValue ? 'text-yellow-400' : 'text-gray-500'}`}
-                    style={{ fontWeight: 900 }}
-                  >
-                    {amount}
-                  </span>
-                ))}
+                {/* Slider value markers */}
+                <div className="flex justify-between mt-1 px-1">
+                  {betAmounts.map((amount, index) => (
+                    <span
+                      key={index}
+                      className={`text-[10px] font-black transition-colors ${index === sliderValue ? 'text-yellow-400' : 'text-gray-500'}`}
+                      style={{ fontWeight: 900 }}
+                    >
+                      {amount}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Desktop Bet Amount and Slider */}
+              <div className="hidden lg:flex flex-col gap-6 lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 w-full max-w-2xl px-4">
+                <div className="text-center">
+                  <p className="text-yellow-400 font-black text-xl mb-2" style={{ fontWeight: 900 }}>BET AMOUNT</p>
+                  <p className="text-white font-black text-5xl" style={{ fontWeight: 900 }}>{betInput || '0'}</p>
+                </div>
+
+                <div className="relative px-4">
+                  <input
+                    type="range"
+                    min="0"
+                    max={betAmounts.length - 1}
+                    value={sliderValue}
+                    onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                    className="w-full h-4 bg-neutral-800 rounded-lg appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:w-8
+                      [&::-webkit-slider-thumb]:h-8
+                      [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-gradient-to-r
+                      [&::-webkit-slider-thumb]:from-yellow-500
+                      [&::-webkit-slider-thumb]:to-yellow-600
+                      [&::-webkit-slider-thumb]:border-4
+                      [&::-webkit-slider-thumb]:border-yellow-700
+                      [&::-webkit-slider-thumb]:shadow-2xl
+                      [&::-webkit-slider-thumb]:cursor-pointer
+                      [&::-webkit-slider-thumb]:hover:scale-110
+                      [&::-webkit-slider-thumb]:transition-transform"
+                  />
+
+                  <div className="flex justify-between mt-2 px-1">
+                    {betAmounts.map((amount, index) => (
+                      <span
+                        key={index}
+                        className={`text-xs font-black transition-colors ${index === sliderValue ? 'text-yellow-400' : 'text-gray-500'}`}
+                        style={{ fontWeight: 900 }}
+                      >
+                        {amount}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 w-full">
+                <Button
+                  onClick={startGame}
+                  className="w-full h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+                  style={{ fontWeight: 900 }}
+                >
+                  DEAL
+                </Button>
               </div>
             </div>
 
-            {/* Deal Button */}
-            <Button
-              onClick={startGame}
-              className="h-16 text-2xl font-black bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
-              style={{ fontWeight: 900 }}
-            >
-              DEAL
-            </Button>
-          </div>
+            {/* Desktop EXIT Button */}
+            {!isShortHeight && onExit && (
+              <button
+                onClick={onExit}
+                className="hidden lg:flex fixed lg:left-6 z-[60] flex-col items-center gap-3 group transition-all duration-300 hover:scale-110 bottom-24"
+              >
+                <div className="relative w-24 h-28 bg-gradient-to-b from-red-700 to-red-900 rounded-xl border-4 border-red-800 shadow-2xl transition-all duration-300 group-hover:shadow-red-500/50">
+                  <div className="absolute inset-3 border-2 border-red-950 rounded"></div>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-4 bg-yellow-600 rounded-sm"></div>
+                  <div className="absolute top-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
+                  <div className="absolute bottom-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
+                </div>
+                <span className="text-red-500 text-2xl drop-shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-300 group-hover:text-red-400 font-black" style={{ fontWeight: 900 }}>
+                  EXIT
+                </span>
+              </button>
+            )}
+
+          </>
         )}
 
         {gameState.gameStatus === 'playing' && (
-          <div className="flex gap-4 animate-fade-in">
+          <div className="flex gap-2 lg:gap-4 animate-fade-in px-0">
             <Button
               onClick={playerHit}
-              className="flex-1 h-16 text-2xl font-black bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+              disabled={calculateHandValue(gameState.playerHand) === 21}
+              className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{ fontWeight: 900 }}
             >
               HIT
             </Button>
             <Button
               onClick={playerStand}
-              className="flex-1 h-16 text-2xl font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+              className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
               style={{ fontWeight: 900 }}
             >
               STAND
@@ -394,13 +501,24 @@ export function BlackjackGame() {
         )}
 
         {gameState.gameStatus === 'finished' && (
-          <Button
-            onClick={resetGame}
-            className="w-full h-16 text-2xl font-black bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 animate-fade-in"
-            style={{ fontWeight: 900 }}
-          >
-            NEW GAME
-          </Button>
+          <div className="flex gap-2 lg:gap-0 animate-fade-in">
+            {onExit && (
+              <Button
+                onClick={onExit}
+                className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 lg:hidden"
+                style={{ fontWeight: 900 }}
+              >
+                EXIT
+              </Button>
+            )}
+            <Button
+              onClick={resetGame}
+              className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+              style={{ fontWeight: 900 }}
+            >
+              NEW GAME
+            </Button>
+          </div>
         )}
       </div>
     </div>
