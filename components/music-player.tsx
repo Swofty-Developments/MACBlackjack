@@ -82,8 +82,9 @@ export function MusicPlayer({ musicType }: MusicPlayerProps) {
     path: `/music/${musicType}/${track.filename}`
   }));
 
-  // Initialize global music manager
+  // Initialize global music manager and sound manager
   useEffect(() => {
+    soundManager.init();
     globalMusicManager.init(musicType, 0, volume, isMuted);
 
     // Subscribe to track changes

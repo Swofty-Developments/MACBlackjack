@@ -72,14 +72,18 @@ class GlobalMusicManager {
         this.nextTrack();
       });
 
-      // Auto-play on first user interaction
-      const playMusic = () => {
-        if (this.audio) {
-          this.audio.play().catch(err => console.log('Audio play failed:', err));
-        }
-        document.removeEventListener('click', playMusic);
-      };
-      document.addEventListener('click', playMusic);
+      // Try to auto-play immediately
+      this.audio.play().catch(err => {
+        console.log('Autoplay blocked, waiting for user interaction:', err);
+        // If autoplay is blocked, play on first user interaction
+        const playMusic = () => {
+          if (this.audio) {
+            this.audio.play().catch(err => console.log('Audio play failed:', err));
+          }
+          document.removeEventListener('click', playMusic);
+        };
+        document.addEventListener('click', playMusic);
+      });
     }
   }
 

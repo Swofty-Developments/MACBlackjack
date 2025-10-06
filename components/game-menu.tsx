@@ -11,6 +11,7 @@ import { BottomBar } from '@/components/bottom-bar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { soundManager } from '@/lib/sound-manager';
+import { ProfilePill } from '@/components/profile-pill';
 
 type MenuState = 'menu' | 'loading' | 'game' | 'history' | 'profile';
 
@@ -62,7 +63,7 @@ export function GameMenu() {
   if (menuState === 'game') {
     return (
       <>
-        <TopBar title="BLACKJACK" />
+        <TopBar title="BLACKJACK" showProfilePill />
         <main className="min-h-screen p-4 bg-background animate-fade-in pt-24 pb-16">
           <div className="container mx-auto">
             <Button
@@ -84,7 +85,7 @@ export function GameMenu() {
   if (menuState === 'history') {
     return (
       <>
-        <TopBar title="GAME HISTORY" />
+        <TopBar title="GAME HISTORY" showProfilePill />
         <main className="min-h-screen p-4 bg-background animate-fade-in pt-24 pb-16">
           <div className="container mx-auto">
             <Button
@@ -106,7 +107,7 @@ export function GameMenu() {
   if (menuState === 'profile') {
     return (
       <>
-        <TopBar title="PROFILE" />
+        <TopBar title="PROFILE" showProfilePill />
         <main className="min-h-screen p-4 bg-background animate-fade-in pt-24 pb-16">
           <div className="container mx-auto max-w-2xl">
             <Button
@@ -127,7 +128,7 @@ export function GameMenu() {
 
   return (
     <>
-      <TopBar title="MENU" />
+      <TopBar title="MENU" showProfilePill />
       <main className="flex min-h-screen items-center justify-start bg-background p-4 pt-20 pb-12 overflow-hidden">
         <div className="relative flex items-center w-full">
           {/* Menu Buttons */}
