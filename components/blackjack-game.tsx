@@ -167,15 +167,17 @@ export function BlackjackGame() {
   if (!user) return null;
 
   return (
-    <Card className="w-full max-w-4xl">
-      <CardHeader>
-        <CardTitle className="text-center text-2xl">Blackjack</CardTitle>
-        <p className="text-center text-muted-foreground">{message}</p>
+    <Card className="w-full max-w-4xl bg-card/50 backdrop-blur-sm border-2 border-accent shadow-2xl">
+      <CardHeader className="space-y-4">
+        <CardTitle className="text-center text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+          Blackjack
+        </CardTitle>
+        <p className="text-center text-lg text-primary font-semibold animate-pulse">{message}</p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Dealer's hand */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">
+        <div className="space-y-2 p-4 rounded-lg bg-accent/20 transition-all duration-300 hover:bg-accent/30">
+          <h3 className="text-lg font-semibold text-primary">
             Dealer's Hand
             {gameState.gameStatus !== 'betting' &&
               gameState.gameStatus !== 'playing' &&
@@ -183,25 +185,28 @@ export function BlackjackGame() {
           </h3>
           <div className="flex gap-2 flex-wrap">
             {gameState.dealerHand.map((card, index) => (
-              <CardDisplay
-                key={index}
-                card={card}
-                hidden={gameState.gameStatus === 'playing' && index === 1}
-              />
+              <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <CardDisplay
+                  card={card}
+                  hidden={gameState.gameStatus === 'playing' && index === 1}
+                />
+              </div>
             ))}
           </div>
         </div>
 
         {/* Player's hand */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">
+        <div className="space-y-2 p-4 rounded-lg bg-accent/20 transition-all duration-300 hover:bg-accent/30">
+          <h3 className="text-lg font-semibold text-primary">
             Your Hand
             {gameState.playerHand.length > 0 &&
               ` (${calculateHandValue(gameState.playerHand)})`}
           </h3>
           <div className="flex gap-2 flex-wrap">
             {gameState.playerHand.map((card, index) => (
-              <CardDisplay key={index} card={card} />
+              <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <CardDisplay card={card} />
+              </div>
             ))}
           </div>
         </div>
@@ -209,7 +214,7 @@ export function BlackjackGame() {
         {/* Controls */}
         <div className="space-y-4">
           {gameState.gameStatus === 'betting' && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 animate-fade-in">
               <Input
                 type="number"
                 placeholder="Enter bet amount"
@@ -217,31 +222,36 @@ export function BlackjackGame() {
                 onChange={(e) => setBetInput(e.target.value)}
                 min="1"
                 max={user.chips}
+                className="border-accent focus:border-primary transition-all"
               />
-              <Button onClick={startGame}>Deal</Button>
+              <Button onClick={startGame} className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl">
+                Deal
+              </Button>
             </div>
           )}
 
           {gameState.gameStatus === 'playing' && (
-            <div className="flex gap-2">
-              <Button onClick={playerHit}>Hit</Button>
-              <Button onClick={playerStand} variant="secondary">
+            <div className="flex gap-2 animate-fade-in">
+              <Button onClick={playerHit} className="flex-1 bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl">
+                Hit
+              </Button>
+              <Button onClick={playerStand} variant="secondary" className="flex-1 bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 transition-all duration-300 shadow-lg hover:shadow-xl text-white">
                 Stand
               </Button>
             </div>
           )}
 
           {gameState.gameStatus === 'finished' && (
-            <Button onClick={resetGame} className="w-full">
+            <Button onClick={resetGame} className="w-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 transition-all duration-300 shadow-lg hover:shadow-xl animate-fade-in">
               New Game
             </Button>
           )}
         </div>
 
         {/* Game info */}
-        <div className="flex justify-between text-sm text-muted-foreground border-t pt-4">
-          <span>Current Bet: {gameState.bet}</span>
-          <span>Chips: {user.chips}</span>
+        <div className="flex justify-between text-sm font-medium border-t-2 border-accent pt-4">
+          <span className="text-blue-400">Current Bet: {gameState.bet}</span>
+          <span className="text-green-400">Chips: {user.chips}</span>
         </div>
       </CardContent>
     </Card>

@@ -25,16 +25,16 @@ export function CardDisplay({ card, hidden = false }: CardDisplayProps) {
 
   if (hidden) {
     return (
-      <div className="relative w-20 h-28 rounded-lg border-2 border-gray-300 bg-gradient-to-br from-blue-600 to-blue-800 shadow-lg">
+      <div className="relative w-20 h-28 rounded-lg border-2 border-accent bg-gradient-to-br from-blue-600 to-blue-800 shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-white text-4xl font-bold">?</div>
+          <div className="text-white text-4xl font-bold animate-pulse">?</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative w-20 h-28 rounded-lg border-2 border-gray-300 bg-white shadow-lg">
+    <div className="relative w-20 h-28 rounded-lg border-2 border-accent bg-gradient-to-br from-white to-gray-100 shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl">
       <div className="absolute top-1 left-1 flex flex-col items-center">
         <span className={`text-xl font-bold ${isRed ? 'text-red-500' : 'text-black'}`}>
           {card.value}
