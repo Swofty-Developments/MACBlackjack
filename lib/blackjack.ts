@@ -55,6 +55,38 @@ export function calculateHandValue(hand: Card[]): number {
   return total;
 }
 
+export function getHandValueDisplay(hand: Card[]): string {
+  let total = 0;
+  let aces = 0;
+
+  for (const card of hand) {
+    if (card.value === 'A') {
+      aces++;
+      total += 11;
+    } else if (['J', 'Q', 'K'].includes(card.value)) {
+      total += 10;
+    } else {
+      total += parseInt(card.value);
+    }
+  }
+
+  const highValue = total;
+  const lowValue = total - (aces * 10);
+
+  // If we have aces and both values are valid (<=21), show both
+  if (aces > 0 && highValue <= 21 && lowValue !== highValue) {
+    return `${highValue}/${lowValue}`;
+  }
+
+  // If high value is over 21, use the low value
+  if (highValue > 21 && aces > 0) {
+    return lowValue.toString();
+  }
+
+  // Otherwise just show the total
+  return highValue.toString();
+}
+
 export function isBlackjack(hand: Card[]): boolean {
   return hand.length === 2 && calculateHandValue(hand) === 21;
 }

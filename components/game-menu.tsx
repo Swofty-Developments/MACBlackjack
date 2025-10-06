@@ -83,7 +83,7 @@ export function GameMenu() {
     return (
       <>
         <TopBar title="BLACKJACK" showProfilePill variant="game" inGame />
-        <main className="fixed inset-0 poker-table-bg animate-fade-in pt-24 pb-16 flex items-center justify-center overflow-hidden">
+        <main className="fixed inset-0 poker-table-bg animate-fade-in-slow pt-24 pb-16 flex items-center justify-center overflow-hidden">
           <div className="w-full h-full flex items-center justify-center overflow-y-auto">
             <BlackjackGame />
           </div>

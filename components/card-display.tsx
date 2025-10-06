@@ -36,7 +36,7 @@ export function CardDisplay({ card, hidden = false, animationDelay = 0 }: CardDi
   if (hidden) {
     return (
       <div
-        className="relative w-32 h-44 rounded-xl border-4 border-blue-700 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card"
+        className="relative w-32 h-44 rounded-xl border-4 border-blue-700 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card opacity-0"
         style={{ animationDelay: `${animationDelay}s` }}
       >
         <div className="absolute inset-2 border-2 border-blue-400 rounded-lg opacity-30"></div>
@@ -56,7 +56,7 @@ export function CardDisplay({ card, hidden = false, animationDelay = 0 }: CardDi
 
   return (
     <div
-      className="relative w-32 h-44 rounded-xl border-4 border-gray-800 bg-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card"
+      className="relative w-32 h-44 rounded-xl border-4 border-gray-800 bg-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-3xl animate-deal-card opacity-0"
       style={{ animationDelay: `${animationDelay}s` }}
     >
       {/* Top-left corner */}

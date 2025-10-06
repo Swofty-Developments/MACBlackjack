@@ -34,7 +34,6 @@ export function ProfilePill({ inGame = false }: ProfilePillProps) {
   const handlePurchase = async (amount: number) => {
     soundManager.play('click_forward');
     await updateChips(user.chips + amount);
-    setIsOpen(false);
   };
 
   // Detect mobile

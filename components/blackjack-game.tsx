@@ -12,6 +12,7 @@ import {
   dealInitialHands,
   hit,
   calculateHandValue,
+  getHandValueDisplay,
   shouldDealerHit,
   determineWinner,
   calculatePayout,
@@ -78,6 +79,10 @@ export function BlackjackGame() {
       return;
     }
 
+    // Deduct chips immediately when bet is placed
+    const newChips = (user?.chips || 0) - bet;
+    updateChips(newChips);
+
     const deck = createDeck();
     const { deck: newDeck, playerHand, dealerHand } = dealInitialHands(deck);
 
@@ -86,51 +91,65 @@ export function BlackjackGame() {
       playerHand,
       dealerHand,
       bet,
-      chips: (user?.chips || 0) - bet,
+      chips: newChips,
       gameStatus: 'playing',
     };
 
-    // Check for immediate blackjack
-    if (isBlackjack(playerHand)) {
-      const result = determineWinner(playerHand, dealerHand);
-      const payout = calculatePayout(bet, result);
-      newGameState.gameStatus = 'finished';
-      newGameState.result = result;
-      newGameState.chips += payout;
-      setMessage(result === 'blackjack' ? 'BLACKJACK! You win!' : 'Push!');
-      updateChips(newGameState.chips);
-      saveGameHistory(user!.uid, bet, playerHand, dealerHand, result, payout - bet);
-    } else {
-      setMessage('Hit or Stand?');
-    }
-
     setGameState(newGameState);
+    setMessage(''); // Hide message during card animation
+
+    // Wait for card animations to complete before checking for blackjack or showing messages
+    const totalCards = playerHand.length + dealerHand.length;
+    const animationDuration = totalCards * 100 + 400; // 100ms delay per card + 400ms animation
+
+    setTimeout(() => {
+      // Check for immediate blackjack
+      if (isBlackjack(playerHand)) {
+        const result = determineWinner(playerHand, dealerHand);
+        const payout = calculatePayout(bet, result);
+        const finalChips = newChips + payout;
+        setGameState(prev => ({
+          ...prev,
+          gameStatus: 'finished',
+          result,
+          chips: finalChips,
+        }));
+        setMessage(result === 'blackjack' ? 'BLACKJACK! You win!' : 'Push!');
+        updateChips(finalChips);
+        saveGameHistory(user!.uid, bet, playerHand, dealerHand, result, payout - bet);
+      } else {
+        setMessage('Hit or Stand?');
+      }
+    }, animationDuration);
   };
 
   const playerHit = () => {
     const { deck: newDeck, hand: newHand } = hit(gameState.deck, gameState.playerHand);
+
+    // Update state immediately
+    setGameState({
+      ...gameState,
+      deck: newDeck,
+      playerHand: newHand,
+    });
+
     const handValue = calculateHandValue(newHand);
 
     if (handValue > 21) {
-      // Player busts
+      // Player busts - chips already deducted, no payout
       const result = 'loss';
       const payout = 0;
-      setGameState({
-        ...gameState,
-        deck: newDeck,
-        playerHand: newHand,
-        gameStatus: 'finished',
-        result,
-      });
-      setMessage('Bust! You lose.');
-      updateChips(gameState.chips);
-      saveGameHistory(user!.uid, gameState.bet, newHand, gameState.dealerHand, result, payout - gameState.bet);
-    } else {
-      setGameState({
-        ...gameState,
-        deck: newDeck,
-        playerHand: newHand,
-      });
+
+      // Wait for card animation before showing result
+      setTimeout(() => {
+        setGameState(prev => ({
+          ...prev,
+          gameStatus: 'finished',
+          result,
+        }));
+        setMessage('Bust! You lose.');
+        saveGameHistory(user!.uid, gameState.bet, newHand, gameState.dealerHand, result, payout - gameState.bet);
+      }, 400);
     }
   };
 
@@ -145,13 +164,13 @@ export function BlackjackGame() {
     setMessage('Dealer is playing...');
 
     // Simulate dealer turn with delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     while (shouldDealerHit(currentDealerHand)) {
       const { deck: newDeck, hand: newHand } = hit(currentDeck, currentDealerHand);
       currentDeck = newDeck;
       currentDealerHand = newHand;
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 300));
     }
 
     const result = determineWinner(gameState.playerHand, currentDealerHand);
@@ -195,7 +214,8 @@ export function BlackjackGame() {
       chips: user?.chips || 0,
       gameStatus: 'betting',
     });
-    setBetInput('');
+    // Set bet input to current slider value instead of clearing it
+    setBetInput(betAmounts[sliderValue]?.toString() || '0');
     setMessage('Place your bet to start!');
   };
 
@@ -271,7 +291,7 @@ export function BlackjackGame() {
               key={index}
               card={card}
               hidden={gameState.gameStatus === 'playing' && index === 1}
-              animationDelay={index * 0.15}
+              animationDelay={index * 0.1}
             />
           ))}
         </div>
@@ -281,14 +301,14 @@ export function BlackjackGame() {
       {gameState.playerHand.length > 0 && (
         <div className="mb-12">
           <h3 className="text-2xl font-black text-white mb-4 text-center drop-shadow-lg" style={{ fontWeight: 900 }}>
-            YOUR HAND - {calculateHandValue(gameState.playerHand)}
+            YOUR HAND - {getHandValueDisplay(gameState.playerHand)}
           </h3>
           <div className="flex gap-4 flex-wrap justify-center min-h-[180px] items-center">
             {gameState.playerHand.map((card, index) => (
               <CardDisplay
                 key={index}
                 card={card}
-                animationDelay={(gameState.dealerHand.length + index) * 0.15}
+                animationDelay={(gameState.dealerHand.length + index) * 0.1}
               />
             ))}
           </div>
