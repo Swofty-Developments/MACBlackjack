@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "MAC Blackjack",
-  description: "Full-stack blackjack game with Firebase",
+  description: "A BLAZINGLY-FAST 🔥🔥 NEXT-GEN AI-INSPIRED 🤖🤖 Blackjack game hosted using Vercel with a Firebase backend.",
   icons: {
     icon: '/favicon.svg',
   },
