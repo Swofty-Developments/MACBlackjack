@@ -161,30 +161,12 @@ export function GameMenu() {
         <TopBar title="PROFILE" showProfilePill />
         <main className="min-h-screen p-4 bg-background animate-fade-in pt-24 pb-16">
           <div className="container mx-auto max-w-2xl">
-            <UserProfile />
+            <UserProfile onExit={handleBack} />
           </div>
-
-          {/* Desktop EXIT Button */}
-          {!isMobile && (
-            <button
-              onClick={handleBack}
-              className="hidden lg:flex fixed left-6 z-[60] flex-col items-center gap-3 group transition-all duration-300 hover:scale-110 bottom-24"
-            >
-              <div className="relative w-24 h-28 bg-gradient-to-b from-red-700 to-red-900 rounded-xl border-4 border-red-800 shadow-2xl transition-all duration-300 group-hover:shadow-red-500/50">
-                <div className="absolute inset-3 border-2 border-red-950 rounded"></div>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-4 bg-yellow-600 rounded-sm"></div>
-                <div className="absolute top-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
-                <div className="absolute bottom-4 left-4 right-4 h-[2px] bg-red-950/50"></div>
-              </div>
-              <span className="text-red-500 text-2xl drop-shadow-[0_0_10px_rgba(239,68,68,0.8)] transition-all duration-300 group-hover:text-red-400 font-black" style={{ fontWeight: 900 }}>
-                EXIT
-              </span>
-            </button>
-          )}
 
           <MusicPlayer musicType="menu" externalOpen={isMusicOpen} onOpenChange={setIsMusicOpen} />
         </main>
-        <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} onBackClick={isMobile ? handleBack : undefined} />
+        <BottomBar showShortHeight={isMobile} onMusicClick={() => setIsMusicOpen(!isMusicOpen)} />
       </>
     );
   }
