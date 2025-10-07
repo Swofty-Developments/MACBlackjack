@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { NotificationSystem } from "@/components/notification-system";
+import { ResolutionChecker } from "@/components/resolution-checker";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <NotificationSystem />
+          <ResolutionChecker />
         </AuthProvider>
       </body>
     </html>

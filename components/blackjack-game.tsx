@@ -246,7 +246,8 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
   };
 
   // Detect mobile (similar to the height detection we already have)
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+  // Also treat short height screens as mobile to avoid layout issues on ultrawide/windowed displays
+  const isMobile = typeof window !== 'undefined' && (window.innerWidth < 1024 || window.innerHeight < 750);
 
   const dealerScale = getCardScale(gameState.dealerHand.length, isMobile);
   const playerScale = getCardScale(gameState.playerHand.length, isMobile);
@@ -273,7 +274,7 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
   return (
     <div className="w-full max-w-7xl h-[800px] mx-auto p-8 pb-8 relative">
       {/* BET Display - Desktop: Curved, Mobile: Straight */}
-      <div className="hidden lg:block absolute top-32 left-20" style={{ pointerEvents: 'none', transform: `rotate(${betRotation}deg)`, transformOrigin: 'left center' }}>
+      <div className={`${isMobile ? 'hidden' : 'block'} absolute top-32 left-20`} style={{ pointerEvents: 'none', transform: `rotate(${betRotation}deg)`, transformOrigin: 'left center' }}>
         <svg width={betWidth} height="60" viewBox={`0 0 ${betWidth} 60`} style={{ overflow: 'visible' }}>
           <defs>
             <path id="betCurve" d={`M 10 50 A ${betRadius} ${betRadius} 0 0 1 ${betWidth - 80} 10`} fill="none"/>
@@ -285,12 +286,12 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
           </text>
         </svg>
       </div>
-      <div className="lg:hidden absolute top-4 left-4 text-yellow-400 font-black text-xl drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]" style={{ fontWeight: 900, pointerEvents: 'none' }}>
+      <div className={`${isMobile ? 'block' : 'hidden'} absolute top-4 left-4 text-yellow-400 font-black text-xl drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]`} style={{ fontWeight: 900, pointerEvents: 'none' }}>
         {betText}
       </div>
 
       {/* CHIPS Display - Desktop: Curved, Mobile: Straight */}
-      <div className="hidden lg:block absolute top-32 right-20" style={{ pointerEvents: 'none', transform: `rotate(${chipsRotation}deg)`, transformOrigin: 'right center' }}>
+      <div className={`${isMobile ? 'hidden' : 'block'} absolute top-32 right-20`} style={{ pointerEvents: 'none', transform: `rotate(${chipsRotation}deg)`, transformOrigin: 'right center' }}>
         <svg width={chipsWidth} height="60" viewBox={`0 0 ${chipsWidth} 60`} style={{ overflow: 'visible' }}>
           <defs>
             <path id="chipsCurve" d={`M 80 10 A ${chipsRadius} ${chipsRadius} 0 0 1 ${chipsWidth - 20} 50`} fill="none"/>
@@ -302,28 +303,28 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
           </text>
         </svg>
       </div>
-      <div className="lg:hidden absolute top-4 right-4 text-green-400 font-black text-xl drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]" style={{ fontWeight: 900, pointerEvents: 'none' }}>
+      <div className={`${isMobile ? 'block' : 'hidden'} absolute top-4 right-4 text-green-400 font-black text-xl drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]`} style={{ fontWeight: 900, pointerEvents: 'none' }}>
         {chipsText}
       </div>
 
       {/* Game Status Message - Centered in Table - Hide during betting on mobile to avoid overlap */}
       {(gameState.gameStatus !== 'betting' || !isShortHeight) && (
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:-mt-32 ${typeof window !== 'undefined' && window.innerHeight < 700 ? '-mt-24' : '-mt-16'}`}>
-          <p className="text-2xl lg:text-3xl text-white font-black animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" style={{ fontWeight: 900 }}>
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${isMobile ? (typeof window !== 'undefined' && window.innerHeight < 700 ? '-mt-24' : '-mt-16') : '-mt-32'}`}>
+          <p className={`${isMobile ? 'text-2xl' : 'text-3xl'} text-white font-black animate-pulse drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]`} style={{ fontWeight: 900 }}>
             {message}
           </p>
         </div>
       )}
 
       {/* Dealer's hand - stays at top */}
-      <div className="lg:mb-12">
-        <h3 className="text-lg lg:text-2xl font-black text-white mb-2 lg:mb-4 text-center drop-shadow-lg" style={{ fontWeight: 900 }}>
+      <div className={isMobile ? '' : 'mb-12'}>
+        <h3 className={`${isMobile ? 'text-lg mb-2' : 'text-2xl mb-4'} font-black text-white text-center drop-shadow-lg`} style={{ fontWeight: 900 }}>
           DEALER
           {gameState.gameStatus !== 'betting' &&
             gameState.gameStatus !== 'playing' &&
             ` - ${calculateHandValue(gameState.dealerHand)}`}
         </h3>
-        <div className="flex gap-2 lg:gap-4 justify-center min-h-[100px] lg:min-h-[180px] items-center">
+        <div className={`flex ${isMobile ? 'gap-2 min-h-[100px]' : 'gap-4 min-h-[180px]'} justify-center items-center`}>
           {gameState.dealerHand.map((card, index) => (
             <CardDisplay
               key={index}
@@ -338,11 +339,11 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
 
       {/* Player's hand - positioned at bottom on mobile */}
       {gameState.playerHand.length > 0 && (
-        <div className={`absolute lg:static left-0 right-0 lg:mb-12 px-4 lg:px-0 ${typeof window !== 'undefined' && window.innerHeight < 700 ? 'top-[42%]' : 'bottom-[200px]'}`}>
-          <h3 className="text-lg lg:text-2xl font-black text-white mb-2 lg:mb-4 text-center drop-shadow-lg" style={{ fontWeight: 900 }}>
+        <div className={`${isMobile ? `absolute left-0 right-0 px-4 ${typeof window !== 'undefined' && window.innerHeight < 700 ? 'top-[42%]' : 'bottom-[200px]'}` : 'mb-12'}`}>
+          <h3 className={`${isMobile ? 'text-lg mb-2' : 'text-2xl mb-4'} font-black text-white text-center drop-shadow-lg`} style={{ fontWeight: 900 }}>
             YOUR HAND - {getHandValueDisplay(gameState.playerHand)}
           </h3>
-          <div className="flex gap-2 lg:gap-4 justify-center min-h-[100px] lg:min-h-[180px] items-center">
+          <div className={`flex ${isMobile ? 'gap-2 min-h-[100px]' : 'gap-4 min-h-[180px]'} justify-center items-center`}>
             {gameState.playerHand.map((card, index) => (
               <CardDisplay
                 key={index}
@@ -356,19 +357,19 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
       )}
 
       {/* Controls */}
-      <div className={`space-y-2 lg:space-y-6 max-w-2xl mx-auto px-4 lg:px-0 absolute left-0 right-0 lg:static ${typeof window !== 'undefined' && window.innerHeight < 700 ? 'top-[30%]' : 'top-[50%]'}`}>
+      <div className={`${isMobile ? 'space-y-2' : 'space-y-6'} max-w-2xl mx-auto ${isMobile ? `px-4 absolute left-0 right-0 ${typeof window !== 'undefined' && window.innerHeight < 700 ? 'top-[30%]' : typeof window !== 'undefined' && window.innerHeight < 750 ? 'top-[31%]' : 'top-[50%]'}` : 'px-0'}`}>
         {gameState.gameStatus === 'betting' && betAmounts.length > 0 && (
           <>
             {/* Deal Button with EXIT inline on mobile */}
-            <div className="lg:static lg:left-0 lg:right-0 flex flex-col gap-4 lg:gap-6 animate-fade-in">
+            <div className={`flex flex-col ${isMobile ? 'gap-4' : 'gap-6'} animate-fade-in`}>
               {/* Bet Amount Display */}
-              <div className="text-center lg:hidden">
+              <div className={`text-center ${isMobile ? 'block' : 'hidden'}`}>
                 <p className="text-yellow-400 font-black text-base mb-1" style={{ fontWeight: 900 }}>BET AMOUNT</p>
                 <p className="text-white font-black text-3xl" style={{ fontWeight: 900 }}>{betInput || '0'}</p>
               </div>
 
               {/* Slider */}
-              <div className="relative px-2 lg:hidden">
+              <div className={`relative px-2 ${isMobile ? 'block' : 'hidden'}`}>
                 <input
                   type="range"
                   min="0"
@@ -406,7 +407,7 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
               </div>
 
               {/* Desktop Bet Amount and Slider */}
-              <div className="hidden lg:flex flex-col gap-6 lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 w-full max-w-2xl px-4">
+              <div className={`${isMobile ? 'hidden' : 'flex flex-col gap-6 absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-4'}`}>
                 <div className="text-center">
                   <p className="text-yellow-400 font-black text-xl mb-2" style={{ fontWeight: 900 }}>BET AMOUNT</p>
                   <p className="text-white font-black text-5xl" style={{ fontWeight: 900 }}>{betInput || '0'}</p>
@@ -447,11 +448,24 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
                     ))}
                   </div>
                 </div>
+
+                {/* Desktop Deal Button - positioned below slider */}
+                <div className="flex gap-2 w-full px-4">
+                  <Button
+                    onClick={startGame}
+                    className="w-full h-16 text-2xl font-black bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+                    style={{ fontWeight: 900 }}
+                  >
+                    DEAL
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2 w-full">
+
+              {/* Mobile Deal Button */}
+              <div className={`flex gap-2 w-full ${isMobile ? 'block' : 'hidden'}`}>
                 <Button
                   onClick={startGame}
-                  className="w-full h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+                  className="w-full h-12 text-lg font-black bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
                   style={{ fontWeight: 900 }}
                 >
                   DEAL
@@ -463,7 +477,7 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
             {!isShortHeight && onExit && (
               <button
                 onClick={onExit}
-                className="hidden lg:flex fixed lg:left-6 z-[60] flex-col items-center gap-3 group transition-all duration-300 hover:scale-110 bottom-24"
+                className={`${isMobile ? 'hidden' : 'flex fixed left-6 z-[60] flex-col items-center gap-3 group transition-all duration-300 hover:scale-110 bottom-24'}`}
               >
                 <div className="relative w-24 h-28 bg-gradient-to-b from-red-700 to-red-900 rounded-xl border-4 border-red-800 shadow-2xl transition-all duration-300 group-hover:shadow-red-500/50">
                   <div className="absolute inset-3 border-2 border-red-950 rounded"></div>
@@ -481,18 +495,18 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
         )}
 
         {gameState.gameStatus === 'playing' && (
-          <div className="flex gap-2 lg:gap-4 animate-fade-in px-0">
+          <div className={`flex ${isMobile ? 'gap-2' : 'gap-4'} animate-fade-in px-0`}>
             <Button
               onClick={playerHit}
               disabled={calculateHandValue(gameState.playerHand) === 21}
-              className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl'} font-black bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
               style={{ fontWeight: 900 }}
             >
               HIT
             </Button>
             <Button
               onClick={playerStand}
-              className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+              className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl'} font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105`}
               style={{ fontWeight: 900 }}
             >
               STAND
@@ -501,11 +515,11 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
         )}
 
         {gameState.gameStatus === 'finished' && (
-          <div className="flex gap-2 lg:gap-0 animate-fade-in">
+          <div className={`flex ${isMobile ? 'gap-2' : 'gap-0'} animate-fade-in`}>
             {onExit && (
               <Button
                 onClick={onExit}
-                className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 lg:hidden"
+                className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl hidden'} font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105`}
                 style={{ fontWeight: 900 }}
               >
                 EXIT
@@ -513,7 +527,7 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
             )}
             <Button
               onClick={resetGame}
-              className="flex-1 h-12 lg:h-16 text-lg lg:text-2xl font-black bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+              className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl'} font-black bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105`}
               style={{ fontWeight: 900 }}
             >
               NEW GAME
