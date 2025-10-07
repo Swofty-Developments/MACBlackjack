@@ -188,8 +188,8 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
 
     try {
       const playerTotal = calculateHandValue(gameState.playerHand);
-      const dealerUpCard = `${gameState.dealerHand[0].rank} of ${gameState.dealerHand[0].suit}`;
-      const playerHand = gameState.playerHand.map(card => `${card.rank} of ${card.suit}`);
+      const dealerUpCard = `${gameState.dealerHand[0].value} of ${gameState.dealerHand[0].suit}`;
+      const playerHand = gameState.playerHand.map(card => `${card.value} of ${card.suit}`);
 
       const response = await fetch('/api/ai-recommendation', {
         method: 'POST',
