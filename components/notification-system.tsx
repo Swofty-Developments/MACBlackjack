@@ -176,6 +176,7 @@ export function NotificationSystem() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [displayedNotifications, setDisplayedNotifications] = useState<Notification[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const checkMobile = () => {
@@ -192,18 +193,39 @@ export function NotificationSystem() {
   }, []);
 
   useEffect(() => {
+    const maxNotifs = isMobile ? MAX_MOBILE_NOTIFICATIONS : MAX_NOTIFICATIONS;
+
     // Add new notifications to display
     const newNotifications = notifications.filter(
       (n) => !displayedNotifications.find((d) => d.id === n.id)
     );
 
     if (newNotifications.length > 0) {
-      setDisplayedNotifications((prev) => [...prev, ...newNotifications]);
+      setDisplayedNotifications((prev) => {
+        const updated = [...prev, ...newNotifications];
+
+        // If we exceed max, mark oldest ones for exit
+        if (updated.length > maxNotifs) {
+          const toRemove = updated.slice(0, updated.length - maxNotifs);
+          setExitingIds(prevExiting => {
+            const newExiting = new Set(prevExiting);
+            toRemove.forEach(n => newExiting.add(n.id));
+            return newExiting;
+          });
+        }
+
+        return updated;
+      });
     }
-  }, [notifications, displayedNotifications]);
+  }, [notifications, displayedNotifications, isMobile]);
 
   const handleExitComplete = (id: string) => {
     setDisplayedNotifications((prev) => prev.filter((n) => n.id !== id));
+    setExitingIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
   };
 
   return (
@@ -213,10 +235,8 @@ export function NotificationSystem() {
         : 'top-24 right-4 max-w-md'
     }`}>
       {displayedNotifications.map((notification, index) => {
-        const maxNotifs = isMobile ? MAX_MOBILE_NOTIFICATIONS : MAX_NOTIFICATIONS;
         const isGone = !notifications.find((n) => n.id === notification.id);
-        const shouldForceExit = (notifications.length > maxNotifs &&
-                                !displayedNotifications.slice(-maxNotifs).includes(notification)) || isGone;
+        const shouldForceExit = exitingIds.has(notification.id) || isGone;
         return (
           <NotificationBanner
             key={notification.id}
