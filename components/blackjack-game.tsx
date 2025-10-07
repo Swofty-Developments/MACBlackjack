@@ -19,6 +19,8 @@ import {
   isBlackjack,
 } from '@/lib/blackjack';
 import { saveGameHistory } from '@/lib/game-history';
+import { AIAssistantDialog } from './ai-assistant-dialog';
+import { Bot } from 'lucide-react';
 
 interface BlackjackGameProps {
   isShortHeight?: boolean;
@@ -38,6 +40,10 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
   const [betInput, setBetInput] = useState('');
   const [sliderValue, setSliderValue] = useState(0);
   const [message, setMessage] = useState('Place your bet to start!');
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState<'HIT' | 'STAND' | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [highlightedAction, setHighlightedAction] = useState<'HIT' | 'STAND' | null>(null);
 
   // Exponential bet amounts: 50, 100, 200, 300, 500, 1000, 2000, etc.
   const getBetAmounts = () => {
@@ -129,6 +135,10 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
   };
 
   const playerHit = () => {
+    // Close AI dialog and clear highlight if open
+    setAiDialogOpen(false);
+    setHighlightedAction(null);
+
     const { deck: newDeck, hand: newHand } = hit(gameState.deck, gameState.playerHand);
 
     // Update state immediately
@@ -158,7 +168,58 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
     }
   };
 
+  const handleRecommendationClick = (action: 'HIT' | 'STAND') => {
+    // Just trigger the action, don't change highlight or close dialog
+    if (action === 'HIT') {
+      playerHit();
+    } else {
+      playerStand();
+    }
+    // Close dialog and clear states
+    setAiDialogOpen(false);
+    setHighlightedAction(null);
+  };
+
+  const getAIRecommendation = async () => {
+    setAiLoading(true);
+    setAiRecommendation(null);
+    setHighlightedAction(null);
+    setAiDialogOpen(true);
+
+    try {
+      const playerTotal = calculateHandValue(gameState.playerHand);
+      const dealerUpCard = `${gameState.dealerHand[0].rank} of ${gameState.dealerHand[0].suit}`;
+      const playerHand = gameState.playerHand.map(card => `${card.rank} of ${card.suit}`);
+
+      const response = await fetch('/api/ai-recommendation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          playerHand,
+          dealerUpCard,
+          playerTotal,
+        }),
+      });
+
+      const data = await response.json();
+      setAiRecommendation(data.recommendation);
+      // Highlight the recommended button immediately when we get the recommendation
+      setHighlightedAction(data.recommendation);
+    } catch (error) {
+      console.error('Failed to get AI recommendation:', error);
+      setAiRecommendation(null);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const playerStand = async () => {
+    // Close AI dialog and clear highlight if open
+    setAiDialogOpen(false);
+    setHighlightedAction(null);
+
     let currentDeck = [...gameState.deck];
     let currentDealerHand = [...gameState.dealerHand];
 
@@ -499,14 +560,21 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
             <Button
               onClick={playerHit}
               disabled={calculateHandValue(gameState.playerHand) === 21}
-              className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl'} font-black bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
+              className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl'} font-black bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${highlightedAction === 'HIT' ? '!ring-4 !ring-blue-300 !scale-110 !shadow-[0_0_40px_rgba(59,130,246,0.8)]' : ''}`}
               style={{ fontWeight: 900 }}
             >
               HIT
             </Button>
             <Button
+              onClick={getAIRecommendation}
+              className={`${isMobile ? 'h-12 w-12 p-0' : 'h-16 w-16 p-0'} font-black bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 flex items-center justify-center`}
+              style={{ fontWeight: 900 }}
+            >
+              <Bot className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            </Button>
+            <Button
               onClick={playerStand}
-              className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl'} font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105`}
+              className={`flex-1 ${isMobile ? 'h-12 text-lg' : 'h-16 text-2xl'} font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105 ${highlightedAction === 'STAND' ? '!ring-4 !ring-red-300 !scale-110 !shadow-[0_0_40px_rgba(220,38,38,0.8)]' : ''}`}
               style={{ fontWeight: 900 }}
             >
               STAND
@@ -535,6 +603,15 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
           </div>
         )}
       </div>
+
+      {/* AI Assistant Dialog */}
+      <AIAssistantDialog
+        open={aiDialogOpen}
+        onOpenChange={setAiDialogOpen}
+        recommendation={aiRecommendation}
+        loading={aiLoading}
+        onRecommendationClick={handleRecommendationClick}
+      />
     </div>
   );
 }
