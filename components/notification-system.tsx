@@ -61,7 +61,7 @@ function NotificationBanner({ notification, index, forceExit, isMobile, onExitCo
         transform: isExiting
           ? (isMobile ? 'translateY(-100%) scale(0.95)' : 'translateX(50px) scale(0.95)')
           : (isMobile ? 'translateY(0) scale(1)' : 'translateX(0) scale(1)'),
-        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out, margin-top 0.5s ease-out',
         pointerEvents: isExiting ? 'none' : 'auto'
       }}
     >
@@ -197,16 +197,17 @@ export function NotificationSystem() {
 
     // Add new notifications to display
     const newNotifications = notifications.filter(
-      (n) => !displayedNotifications.find((d) => d.id === n.id)
+      (n) => !displayedNotifications.find((d) => d.id === n.id) && !exitingIds.has(n.id)
     );
 
     if (newNotifications.length > 0) {
       setDisplayedNotifications((prev) => {
         const updated = [...prev, ...newNotifications];
+        const nonExiting = updated.filter(n => !exitingIds.has(n.id));
 
-        // If we exceed max, mark oldest ones for exit
-        if (updated.length > maxNotifs) {
-          const toRemove = updated.slice(0, updated.length - maxNotifs);
+        // If we exceed max, mark oldest non-exiting ones for exit
+        if (nonExiting.length > maxNotifs) {
+          const toRemove = nonExiting.slice(0, nonExiting.length - maxNotifs);
           setExitingIds(prevExiting => {
             const newExiting = new Set(prevExiting);
             toRemove.forEach(n => newExiting.add(n.id));
@@ -217,7 +218,7 @@ export function NotificationSystem() {
         return updated;
       });
     }
-  }, [notifications, displayedNotifications, isMobile]);
+  }, [notifications, isMobile]);
 
   const handleExitComplete = (id: string) => {
     setDisplayedNotifications((prev) => prev.filter((n) => n.id !== id));
