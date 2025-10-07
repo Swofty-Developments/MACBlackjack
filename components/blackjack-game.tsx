@@ -419,6 +419,18 @@ export function BlackjackGame({ isShortHeight = false, onExit }: BlackjackGamePr
 
       {/* Controls */}
       <div className={`${isMobile ? 'space-y-2' : 'space-y-6'} max-w-2xl mx-auto ${isMobile ? `px-4 absolute left-0 right-0 ${typeof window !== 'undefined' && window.innerHeight < 700 ? 'top-[30%]' : typeof window !== 'undefined' && window.innerHeight < 750 ? 'top-[31%]' : 'top-[50%]'}` : 'px-0'}`}>
+        {gameState.gameStatus === 'betting' && betAmounts.length === 0 && isMobile && onExit && (
+          // Show EXIT button when out of chips on mobile
+          <div className="flex justify-center animate-fade-in">
+            <Button
+              onClick={onExit}
+              className="w-full h-12 text-lg font-black bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 transition-all duration-300 shadow-2xl hover:shadow-3xl hover:scale-105"
+              style={{ fontWeight: 900 }}
+            >
+              EXIT
+            </Button>
+          </div>
+        )}
         {gameState.gameStatus === 'betting' && betAmounts.length > 0 && (
           <>
             {/* Deal Button with EXIT inline on mobile */}
