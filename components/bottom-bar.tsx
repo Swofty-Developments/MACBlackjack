@@ -4,9 +4,10 @@ interface BottomBarProps {
   variant?: 'default' | 'game';
   onMusicClick?: () => void;
   showShortHeight?: boolean;
+  onBackClick?: () => void;
 }
 
-export function BottomBar({ variant = 'default', onMusicClick, showShortHeight = false }: BottomBarProps) {
+export function BottomBar({ variant = 'default', onMusicClick, showShortHeight = false, onBackClick }: BottomBarProps) {
   const barColor = variant === 'game' ? 'bg-green-900/40' : 'bg-neutral-700/30';
   const pixelColor = variant === 'game' ? 'bg-green-900/40' : 'bg-neutral-700/30';
 
@@ -85,16 +86,29 @@ export function BottomBar({ variant = 'default', onMusicClick, showShortHeight =
             <p className="text-sm text-white leading-tight" style={{ fontWeight: 900 }}>SWOFTY</p>
           </div>
 
-          {/* Music button for short height screens */}
-          {showShortHeight && onMusicClick && (
-            <button
-              onClick={onMusicClick}
-              className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg transition-all duration-300 text-sm"
-              style={{ fontWeight: 900 }}
-            >
-              OPEN MUSIC PICKER
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Back button for mobile */}
+            {onBackClick && (
+              <button
+                onClick={onBackClick}
+                className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-lg transition-all duration-300 text-sm"
+                style={{ fontWeight: 900 }}
+              >
+                EXIT
+              </button>
+            )}
+
+            {/* Music button for short height screens */}
+            {showShortHeight && onMusicClick && (
+              <button
+                onClick={onMusicClick}
+                className="px-24 py-2 bg-green-700 hover:bg-green-600 text-white rounded-lg transition-all duration-300 text-sm"
+                style={{ fontWeight: 900 }}
+              >
+                MUSIC
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
