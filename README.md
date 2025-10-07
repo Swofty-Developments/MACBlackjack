@@ -1,5 +1,7 @@
 # MAC Blackjack
 
-So as you might be able to see, I did have a very interpretive idea of "similar UI/UX experience", but hey, hopefully it looks good right!! Anyhow the functionality is basically exactly what is given, except with the addition of a music picker. Portions of the website, such as the main menu, are inspired by the design of tetr.io, and that is also where the soundtrack is from. No artwork is directly taken from tetr.io though!
+So as you might be able to see, I did have a very interpretive idea of "similar UI/UX experience", but hey, hopefully it looks good right!! Anyhow the functionality is basically exactly what is given, except with the addition of a music picker. Portions of the website, such as the main menu, are inspired by the design of tetr.io, and that is also where the soundtrack is from. No artwork is directly taken from tetr.io though.
+
+As for assumptions, the deck is finite, meaning each time a new game starts a fresh shuffled deck is created (to prevent online card counting). Blackjack pays 3:2, the dealer hits on 16 or less, there's no splitting, no doubling, no insurance and no surrender. Additionally it's single-hand only. In terms of the chips we have a minimum bet globally of 50 chips, there is no table maximum and chips are deducted immediately. You also cannot get chips from the table, you'll need to go back into the menu (aka the tellers in real life) to withdraw.
 
 The stack is very simple, with me using Firebase for both its auth and database through Firestore, and Vercel for hosting. TailwindCSS and Next.js are used as the frameworks/libs within the website. Additionally the entire website is mobile-responsive, hope you enjoy!
