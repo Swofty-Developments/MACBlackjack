@@ -55,14 +55,17 @@ function NotificationBanner({ notification, index, forceExit, isMobile, onExitCo
   return (
     <div
       style={{
-        marginTop: index > 0 ? '12px' : '0',
+        marginTop: isExiting ? '0' : (index > 0 ? '12px' : '0'),
+        marginBottom: isExiting ? '-100px' : '0',
         animation: `${slideInAnimation} 0.3s ease-out`,
         opacity: isExiting ? 0 : 1,
         transform: isExiting
-          ? (isMobile ? 'translateY(-100%) scale(0.95)' : 'translateX(50px) scale(0.95)')
+          ? (isMobile ? 'translateY(-20px) scale(0.95)' : 'translateX(50px) scale(0.95)')
           : (isMobile ? 'translateY(0) scale(1)' : 'translateX(0) scale(1)'),
-        transition: 'opacity 0.5s ease-out, transform 0.5s ease-out, margin-top 0.5s ease-out',
-        pointerEvents: isExiting ? 'none' : 'auto'
+        transition: 'all 0.4s ease-out',
+        pointerEvents: isExiting ? 'none' : 'auto',
+        maxHeight: isExiting ? '0' : '500px',
+        overflow: 'hidden'
       }}
     >
       <div className={isMobile ? 'flex flex-col' : 'flex'}>
