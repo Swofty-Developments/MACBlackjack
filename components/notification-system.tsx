@@ -56,13 +56,12 @@ function NotificationBanner({ notification, index, forceExit, isMobile, onExitCo
     <div
       style={{
         marginTop: isExiting ? '0' : (index > 0 ? '12px' : '0'),
-        marginBottom: isExiting ? '-100px' : '0',
         animation: `${slideInAnimation} 0.3s ease-out`,
         opacity: isExiting ? 0 : 1,
         transform: isExiting
-          ? (isMobile ? 'translateY(-20px) scale(0.95)' : 'translateX(50px) scale(0.95)')
-          : (isMobile ? 'translateY(0) scale(1)' : 'translateX(0) scale(1)'),
-        transition: 'all 0.4s ease-out',
+          ? (isMobile ? 'scale(0.9)' : 'translateX(50px) scale(0.9)')
+          : (isMobile ? 'scale(1)' : 'translateX(0) scale(1)'),
+        transition: 'all 0.3s ease-out',
         pointerEvents: isExiting ? 'none' : 'auto',
         maxHeight: isExiting ? '0' : '500px',
         overflow: 'hidden'
